@@ -13,10 +13,6 @@ const ThemeToggle = () => {
 };
 
 const ToggleButton = styled.button`
-  position: fixed;
-  top: 12px;
-  right: 120px; /* Position next to export button */
-  z-index: 100;
   background: ${props => props.theme.button};
   color: ${props => props.theme.buttonText};
   border: 2px solid ${props => props.theme.borderAccent};
@@ -29,6 +25,7 @@ const ToggleButton = styled.button`
   gap: 6px;
   font-size: 14px;
   transition: all 0.3s ease;
+  position: static; /* Remove fixed positioning */
   
   &:hover { 
     background: ${props => props.theme.buttonHover};
@@ -39,6 +36,20 @@ const ToggleButton = styled.button`
   span {
     font-size: 12px;
     font-weight: bold;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 5px 8px;
+    
+    span {
+      display: none; /* Hide text on very small screens */
+    }
   }
 `;
 

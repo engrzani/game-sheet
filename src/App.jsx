@@ -20,6 +20,7 @@ import Timing from './components/Timing';
 import ActionPoints from './components/ActionPoints';
 import Attacks from './components/Attacks';
 import ThemeToggle from './components/ThemeToggle';
+import GlobalBackground from './components/GlobalBackground';
 
 // ---------------------------------------------------------------------
 //  INITIAL STATE
@@ -128,13 +129,14 @@ function AppContent() {
 
   return (
     <DndProvider backend={HTML5Backend}>
+      <GlobalBackground />
       <AppContainer theme={theme}>
 
-        {/* Theme Toggle */}
-        <ThemeToggle />
-
-        {/* PDF Export Button (fixed top-right) */}
-        <ExportButton theme={theme} onClick={exportPDF}>Export PDF</ExportButton>
+        {/* Fixed Buttons Container */}
+        <ButtonContainer>
+          <ThemeToggle />
+          <ExportButton theme={theme} onClick={exportPDF}>Export PDF</ExportButton>
+        </ButtonContainer>
 
         <Header state={state} updateState={updateState} />
 
@@ -191,13 +193,46 @@ const AppContainer = styled.div`
   border-radius: 12px;
   transition: all 0.3s ease;
   box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  
+  /* Fix background overflow issue */
+  overflow-x: hidden;
+  
+  /* Responsive padding */
+  @media (max-width: 768px) {
+    padding: 15px;
+    margin: 10px;
+    border-width: 2px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 8px;
+  }
 `;
 
-const ExportButton = styled.button`
+const ButtonContainer = styled.div`
   position: fixed;
   top: 12px;
   right: 12px;
   z-index: 100;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  @media (max-width: 480px) {
+    top: 8px;
+    right: 8px;
+    gap: 4px;
+  }
+`;
+
+const ExportButton = styled.button`
   background: ${props => props.theme.button};
   color: ${props => props.theme.buttonText};
   border: 2px solid ${props => props.theme.borderAccent};
@@ -206,11 +241,23 @@ const ExportButton = styled.button`
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: static; /* Remove fixed positioning */
   
   &:hover { 
     background: ${props => props.theme.buttonHover};
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 5px 10px;
+    font-size: 12px;
   }
 `;
 
