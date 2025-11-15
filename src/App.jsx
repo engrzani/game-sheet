@@ -5,7 +5,8 @@ import jsPDF from 'jspdf';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import { ThemeProvider, useTheme } from './context/ThemeContext';
+import ThemeProvider from './context/ThemeContext';
+import { useTheme } from './hooks/useTheme';
 
 import Header from './components/Header';
 import Health from './components/Health';
@@ -18,6 +19,7 @@ import ActionPoints from './components/ActionPoints';
 import Attacks from './components/Attacks';
 import ThemeToggle from './components/ThemeToggle';
 import GlobalBackground from './components/GlobalBackground';
+import CharacterManager from './components/CharacterManager';
 
 // ---------------------------------------------------------------------
 //  INITIAL STATE
@@ -76,15 +78,26 @@ const initialState = {
 function AppContent() {
   const { theme } = useTheme();
   const [state, setState] = useState(initialState);
+  const [currentCharacterId, setCurrentCharacterId] = useState('default');
+  const [showCharacterManager, setShowCharacterManager] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('gameSheet');
+    const saved = localStorage.getItem(`gameSheet_${currentCharacterId}`);
     if (saved) setState(JSON.parse(saved));
-  }, []);
+  }, [currentCharacterId]);
 
   useEffect(() => {
-    localStorage.setItem('gameSheet', JSON.stringify(state));
-  }, [state]);
+    localStorage.setItem(`gameSheet_${currentCharacterId}`, JSON.stringify(state));
+  }, [state, currentCharacterId]);
+
+  const loadCharacter = (characterId) => {
+    setCurrentCharacterId(characterId);
+    setShowCharacterManager(false);
+  };
+
+  const getCharacterName = () => {
+    return state.characterName || `Character ${currentCharacterId}`;
+  };
 
   const updateState = (key, value) =>
     setState(prev => ({ ...prev, [key]: value }));
@@ -138,30 +151,45 @@ function AppContent() {
   return (
     <DndProvider backend={HTML5Backend}>
       <GlobalBackground />
-      <AppContainer>
+      <AppContainer theme={theme}>
         <ButtonContainer>
           <ThemeToggle />
-          <ExportButton onClick={exportPDF}>PDF Export</ExportButton>
+          <CharacterButton theme={theme} onClick={() => setShowCharacterManager(!showCharacterManager)}>
+            📁 Characters
+          </CharacterButton>
+          <ExportButton theme={theme} onClick={exportPDF}>PDF Export</ExportButton>
           <ResetButton onClick={resetRolls}>Reset Rolls</ResetButton>
         </ButtonContainer>
 
+        {showCharacterManager && (
+          <CharacterManager 
+            currentCharacterId={currentCharacterId}
+            onLoadCharacter={loadCharacter}
+            onClose={() => setShowCharacterManager(false)}
+          />
+        )}
+
         <Header state={state} updateState={updateState} />
-        <MainGrid>
-          <LeftPanel>
-            <Dodge state={state} updateState={updateState} rollDice={rollDice} />
-            <Skills state={state} updateState={updateState} rollDice={rollDice} />
-          </LeftPanel>
-          <MiddlePanel>
+        <ImprovedGrid>
+          <TopRow>
             <Health state={state} updateState={updateState} />
-            <Defense state={state} updateState={updateState} />
-            <Speed state={state} updateState={updateState} />
-            <Timing state={state} updateState={updateState} rollDice={rollDice} />
             <ActionPoints state={state} updateState={updateState} />
-          </MiddlePanel>
-          <RightPanel>
-            <Attacks state={state} updateState={updateState} rollDice={rollDice} />
-          </RightPanel>
-        </MainGrid>
+            <Speed state={state} updateState={updateState} />
+          </TopRow>
+          <MainRow>
+            <LeftSection>
+              <Skills state={state} updateState={updateState} rollDice={rollDice} />
+            </LeftSection>
+            <MiddleSection>
+              <Dodge state={state} updateState={updateState} rollDice={rollDice} />
+              <Timing state={state} updateState={updateState} rollDice={rollDice} />
+            </MiddleSection>
+            <RightSection>
+              <Defense state={state} updateState={updateState} />
+              <Attacks state={state} updateState={updateState} rollDice={rollDice} performRoll={performRoll} />
+            </RightSection>
+          </MainRow>
+        </ImprovedGrid>
       </AppContainer>
     </DndProvider>
   );
@@ -226,14 +254,55 @@ const ResetButton = styled.button`
   &:hover { background: #dc2626; }
 `;
 
-const MainGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  gap: 20px;
-  margin-top: 20px;
-  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+const CharacterButton = styled.button`
+  background: ${p => p.theme.button};
+  color: ${p => p.theme.buttonText};
+  border: 2px solid ${p => p.theme.borderAccent};
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  &:hover { background: ${p => p.theme.buttonHover}; }
 `;
 
-const LeftPanel = styled.div``;
-const MiddlePanel = styled.div``;
-const RightPanel = styled.div``;
+const ImprovedGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+`;
+
+const TopRow = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 15px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+`;
+
+const MainRow = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 15px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+`;
+
+const LeftSection = styled.div``;
+const MiddleSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+`;
+const RightSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+`;

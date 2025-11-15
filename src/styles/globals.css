@@ -1,0 +1,5 @@
+/* src/styles/globals.css */
+.compact-mode .grid-cols-4 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.compact-mode .text-xs { font-size: 0.65rem; }

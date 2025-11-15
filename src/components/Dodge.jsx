@@ -1,17 +1,22 @@
 // src/components/Dodge.jsx
-import styled from 'styled-components';
 import { Btn, Section } from './SharedStyles';
+import { useTheme } from '../hooks/useTheme';
 
 export default function Dodge({ state, updateState, rollDice }) {
+  const { theme } = useTheme();
   const d = state.dodge;
   const bonus = d.base + d.mods;
   
   const adj = (field, delta) => {
-  if (field === 'diceCount') {
-    const newVal = Math.max(1, Math.min(6, d.diceCount + delta));
-    updateState('dodge', { ...d, diceCount: newVal });
-  }
-};
+    if (field === 'diceCount') {
+      const newVal = Math.max(1, Math.min(6, d.diceCount + delta));
+      updateState('dodge', { ...d, diceCount: newVal });
+    } else {
+      const newVal = Math.max(0, d[field] + delta);
+      updateState('dodge', { ...d, [field]: newVal });
+    }
+  };
+  
   const roll = () => {
     const result = rollDice(6, d.diceCount);
     const total = result.total + bonus;
@@ -23,19 +28,19 @@ export default function Dodge({ state, updateState, rollDice }) {
   };
 
   return (
-    <Section>
+    <Section theme={theme}>
       <h3>Dodge ({d.diceCount}d6 + {bonus})</h3>
 
       <div>
-        Base: {d.base} <Btn onClick={() => adj('base', 1)}>+</Btn><Btn onClick={() => adj('base', -1)}>-</Btn>
+        Base: {d.base} <Btn theme={theme} onClick={() => adj('base', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('base', -1)}>-</Btn>
       </div>
 
       <div>
-        Mods: {d.mods} <Btn onClick={() => adj('mods', 1)}>+</Btn><Btn onClick={() => adj('mods', -1)}>-</Btn>
+        Mods: {d.mods} <Btn theme={theme} onClick={() => adj('mods', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('mods', -1)}>-</Btn>
       </div>
 
       <div>
-        Dice: {d.diceCount} <Btn onClick={() => adj('diceCount', 1)}>+</Btn><Btn onClick={() => adj('diceCount', -1)}>-</Btn>
+        Dice: {d.diceCount} <Btn theme={theme} onClick={() => adj('diceCount', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('diceCount', -1)}>-</Btn>
       </div>
 
       {d.lastRolls && d.lastRolls.length > 0 && (
@@ -46,7 +51,20 @@ export default function Dodge({ state, updateState, rollDice }) {
 
       {d.rollResult > 0 && <div><strong>Result: {d.rollResult}</strong></div>}
 
-      <button onClick={roll}>Roll Dodge</button>
+      <button 
+        onClick={roll}
+        style={{
+          background: theme.button,
+          color: theme.buttonText,
+          border: 'none',
+          padding: '6px 12px',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          marginTop: '8px'
+        }}
+      >
+        Roll Dodge
+      </button>
     </Section>
   );
 }

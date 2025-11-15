@@ -1,8 +1,10 @@
 // src/components/Skills.jsx
 import styled from 'styled-components';
-import { BtnSmall, Section } from './SharedStyles';
+import { Btn, Section } from './SharedStyles';
+import { useTheme } from '../hooks/useTheme';
 
 export default function Skills({ state, updateState, rollDice }) {
+  const { theme } = useTheme();
   const s = state.skills;
 
   const rollSkill = (idx) => {
@@ -39,52 +41,157 @@ export default function Skills({ state, updateState, rollDice }) {
   };
 
   return (
-    <Section>
-      <h3>Skill Saves</h3>
-      <Grid>
+    <Section theme={theme}>
+      <h3>Skillsaves</h3>
+      <CompactGrid>
         {s.list.map((skill, i) => (
-          <Skill key={skill.name}>
-            <Name>{skill.name}</Name>
-            <Row>
-              <Label>Base</Label>
-              <Box>{skill.base}</Box>
-              <BtnSmall onClick={() => adjust(i, 'base', 1)}>+</BtnSmall>
-              <BtnSmall onClick={() => adjust(i, 'base', -1)}>-</BtnSmall>
-            </Row>
-            <Row>
-              <Label>Mods</Label>
-              <Box>{skill.mods}</Box>
-              <BtnSmall onClick={() => adjust(i, 'mods', 1)}>+</BtnSmall>
-              <BtnSmall onClick={() => adjust(i, 'mods', -1)}>-</BtnSmall>
-            </Row>
-            <Row>
-              <Label>Total</Label>
-              <Box bold>{skill.base + skill.mods}</Box>
-            </Row>
-            <Controls>
-              <Dubs>
+          <CompactSkill key={skill.name} theme={theme}>
+            <SkillName theme={theme}>{skill.name}</SkillName>
+            <CompactRow>
+              <SmallLabel>Base</SmallLabel>
+              <SmallBox theme={theme}>{skill.base}</SmallBox>
+              <SmallBtn theme={theme} onClick={() => adjust(i, 'base', 1)}>+</SmallBtn>
+              <SmallBtn theme={theme} onClick={() => adjust(i, 'base', -1)}>-</SmallBtn>
+            </CompactRow>
+            <CompactRow>
+              <SmallLabel>Mods</SmallLabel>
+              <SmallBox theme={theme}>{skill.mods}</SmallBox>
+              <SmallBtn theme={theme} onClick={() => adjust(i, 'mods', 1)}>+</SmallBtn>
+              <SmallBtn theme={theme} onClick={() => adjust(i, 'mods', -1)}>-</SmallBtn>
+            </CompactRow>
+            <CompactRow>
+              <SmallLabel>Total</SmallLabel>
+              <SmallBox theme={theme} $bold>{skill.base + skill.mods}</SmallBox>
+            </CompactRow>
+            <CompactControls>
+              <CompactDubs theme={theme}>
                 <input type="checkbox" checked={skill.dubs} onChange={() => toggleDubs(i)} />
                 <span>Dubs</span>
-              </Dubs>
-              <RollBtn onClick={() => rollSkill(i)}>ROLL</RollBtn>
-            </Controls>
+              </CompactDubs>
+              <CompactRollBtn theme={theme} onClick={() => rollSkill(i)}>ROLL</CompactRollBtn>
+            </CompactControls>
             {skill.rollResult > 0 && (
-              <Result>{skill.rollResult} {skill.lastRoll && `(${skill.lastRoll})`}</Result>
+              <CompactResult theme={theme}>{skill.rollResult} {skill.lastRoll && `(${skill.lastRoll})`}</CompactResult>
             )}
-          </Skill>
+          </CompactSkill>
         ))}
-      </Grid>
+      </CompactGrid>
     </Section>
   );
 }
 
-const Grid = styled.div` display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; `;
-const Skill = styled.div` padding: 12px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); `;
-const Name = styled.div` font-weight: bold; text-align: center; margin-bottom: 8px; color: var(--accent); `;
-const Row = styled.div` display: flex; align-items: center; gap: 4px; margin-bottom: 4px; `;
-const Label = styled.span` min-width: 36px; font-size: 13px; `;
-const Box = styled.div` min-width: 24px; text-align: center; padding: 2px 6px; background: var(--inputBg); border-radius: 4px; border: 1px solid var(--border); font-weight: ${p => p.bold ? 'bold' : 'normal'}; `;
-const Controls = styled.div` display: flex; justify-content: space-between; margin-top: 6px; `;
-const Dubs = styled.label` display: flex; align-items: center; gap: 4px; font-size: 13px; input { accent-color: var(--accent); } `;
-const RollBtn = styled.button` background: var(--accent); color: #000; border: none; padding: 4px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; &:hover { background: var(--accentHover); } `;
-const Result = styled.div` margin-top: 6px; padding: 6px; background: var(--success); border-radius: 4px; text-align: center; font-size: 14px; font-weight: bold; `;
+const CompactGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const CompactSkill = styled.div`
+  padding: 8px;
+  background: ${props => props.theme.sectionBg};
+  border-radius: 6px;
+  border: 1px solid ${props => props.theme.border};
+  font-size: 12px;
+`;
+
+const SkillName = styled.div`
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 6px;
+  color: ${props => props.theme.borderAccent};
+  font-size: 11px;
+`;
+
+const CompactRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 3px;
+`;
+
+const SmallLabel = styled.span`
+  min-width: 26px;
+  font-size: 10px;
+  color: ${props => props.theme?.text || '#000'};
+`;
+
+const SmallBox = styled.div`
+  min-width: 18px;
+  text-align: center;
+  padding: 1px 4px;
+  background: ${props => props.theme.inputBg};
+  border-radius: 3px;
+  border: 1px solid ${props => props.theme.border};
+  font-weight: ${p => p.$bold ? 'bold' : 'normal'};
+  color: ${props => props.theme.text};
+  font-size: 10px;
+`;
+
+const SmallBtn = styled.button`
+  background: ${props => props.theme.button};
+  color: ${props => props.theme.buttonText};
+  border: none;
+  padding: 1px 4px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: bold;
+  min-width: 14px;
+  height: 16px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: ${props => props.theme.buttonHover};
+    transform: scale(1.1);
+  }
+`;
+
+const CompactControls = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+`;
+
+const CompactDubs = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  color: ${props => props.theme.text};
+  
+  input {
+    accent-color: ${props => props.theme.borderAccent};
+    transform: scale(0.8);
+  }
+`;
+
+const CompactRollBtn = styled.button`
+  background: ${props => props.theme.button};
+  color: ${props => props.theme.buttonText};
+  border: none;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 9px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: ${props => props.theme.buttonHover};
+    transform: scale(1.05);
+  }
+`;
+
+const CompactResult = styled.div`
+  margin-top: 4px;
+  padding: 3px;
+  background: ${props => props.theme.borderAccent}22;
+  border: 1px solid ${props => props.theme.borderAccent};
+  border-radius: 3px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: ${props => props.theme.text};
+`;
