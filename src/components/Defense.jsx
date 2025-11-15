@@ -22,12 +22,17 @@ export default function Defense({ state, updateState }) {
 
   return (
     <Section>
-      <h3>Defense</h3>
-      <div>
-        Physical: {d.physical}{' '}
-        <Btn onClick={() => setPhysical(1)}>+</Btn>
-        <Btn onClick={() => setPhysical(-1)}>-</Btn>
-      </div>
+      <h3>Damage Reduction</h3>
+      {Object.entries(d.nonPhysical).map(([type, val]) => (
+      <Row key={type}>
+      <span>{type}:</span>
+      <Box>{val}</Box>
+      <BtnSmall onClick={() => adj(type, 1)}>+</BtnSmall>
+      <BtnSmall onClick={() => adj(type, -1)}>-</BtnSmall>
+      <DeleteBtn onClick={() => deleteType(type)}>Delete</DeleteBtn>
+    </Row>
+  ))}
+  <AddBtn onClick={addType}>+ Add Type</AddBtn>
 
       <h4>Non-Physical</h4>
       {Object.entries(d.nonPhysical).map(([type, val]) => (

@@ -1,47 +1,26 @@
+
+// src/components/SharedStyles.js
 import styled from 'styled-components';
 
 export const Section = styled.div`
-  background: ${props => props.theme.sectionBg};
-  color: ${props => props.theme.text};
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border-left: 4px solid ${props => props.theme.sectionBorder};
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  }
-  
-  h3 {
-    margin: 0 0 8px 0;
-    color: ${props => props.theme.text};
-    font-weight: bold;
-  }
+  background: var(--card);
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 10px;
+  border-left: 5px solid var(--accent);
 `;
 
-export const Btn = styled.button`
-  background: ${props => props.theme.button};
-  color: ${props => props.theme.buttonText};
+export const BtnSmall = styled.button`
+  background: var(--accent);
+  color: #000;
   border: none;
-  margin: 0 3px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
   font-weight: bold;
-  transition: all 0.2s ease;
-  min-width: 28px;
-  
-  &:hover { 
-    background: ${props => props.theme.buttonHover};
-    transform: scale(1.05);
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
+  font-size: 12px;
+  cursor: pointer;
+  &:hover { background: var(--accentHover); }
 `;
 
 export const Input = styled.input`

@@ -18,7 +18,30 @@ export default function Attacks({ state, updateState, performRoll }) {
     if (!spend(cost)) return;
     performRoll(name, heavy ? 2 : 1, 0);
   };
+const AttackRow = ({ name, attack }) => {
+  const total = attack.dice + attack.base + attack.mods;
+  const roll = () => {
+    if (state.actionPoints.current < attack.apCost) return;
+    updateState('actionPoints', { ...state.actionPoints, current: state.actionPoints.current - attack.apCost });
+    const res = rollDice(6, attack.dice);
+    updateState('attacks', { ...state.attacks, [name]: { ...attack, rollResult: res.total + attack.base + attack.mods } });
+  };
 
+  return (
+    <Attack>
+      <Name>{name.replace(/([A-Z])/g, ' $1').trim()}</Name>
+      <Row>
+        <Label>Dice</Label>
+        <Box>{attack.dice}</Box>
+        <BtnSmall onClick={() => adj(name, 'dice', 1)}>+</BtnSmall>
+        <BtnSmall onClick={() => adj(name, 'dice', -1)}>-</BtnSmall>
+      </Row>
+      {/* Base, Mods, AP Cost */}
+      <RollBtn onClick={roll}>ROLL</RollBtn>
+      {attack.rollResult > 0 && <Result>{attack.rollResult}</Result>}
+    </Attack>
+  );
+};
   return (
     <Section>
       <h3>Common Attacks</h3>

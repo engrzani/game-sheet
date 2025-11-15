@@ -6,7 +6,7 @@ export default function ActionPoints({ state, updateState }) {
 
  // src/components/ActionPoints.jsx
 const endTurn = () => {
-  const carry = ap.current > 0 ? 1 : 0;
+  const carry = state.actionPoints.current > 0 ? 1 : 0;
   updateState('actionPoints', {
     current: 5 + carry,
     max: 10,

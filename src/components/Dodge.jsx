@@ -5,12 +5,13 @@ import { Btn, Section } from './SharedStyles';
 export default function Dodge({ state, updateState, rollDice }) {
   const d = state.dodge;
   const bonus = d.base + d.mods;
-
+  
   const adj = (field, delta) => {
-    const newVal = Math.max(0, d[field] + delta);
-    updateState('dodge', { ...d, [field]: newVal });
-  };
-
+  if (field === 'diceCount') {
+    const newVal = Math.max(1, Math.min(6, d.diceCount + delta));
+    updateState('dodge', { ...d, diceCount: newVal });
+  }
+};
   const roll = () => {
     const result = rollDice(6, d.diceCount);
     const total = result.total + bonus;

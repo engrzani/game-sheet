@@ -75,6 +75,19 @@ const HealthDisplay = styled.div`
   margin-bottom: 12px;
   font-size: 16px;
 `;
+const HealthInput = ({ label, value, onChange, step = 1 }) => (
+  <InputRow>
+    <label>{label}</label>
+    <InputBox
+      type="number"
+      value={value}
+      onChange={onChange}
+      onClick={e => e.target.select()}
+    />
+    <BtnSmall onClick={() => onChange({ target: { value: value + step } })}>+</BtnSmall>
+    <BtnSmall onClick={() => onChange({ target: { value: value - step } })}>-</BtnSmall>
+  </InputRow>
+);
 
 const StatRow = styled.div`
   display: flex;

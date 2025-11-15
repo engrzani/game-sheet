@@ -5,11 +5,8 @@ import jsPDF from 'jspdf';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-// Theme
-import ThemeProvider from './context/ThemeContext';
-import { useTheme } from './hooks/useTheme';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
-// Components
 import Header from './components/Header';
 import Health from './components/Health';
 import Defense from './components/Defense';
@@ -45,7 +42,6 @@ const initialState = {
     lastRolls: []
   },
 
-  // PER-SKILL DUBS + lastRoll
   skills: {
     list: [
       { name: 'Power',    base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
@@ -61,6 +57,16 @@ const initialState = {
   speed: { base: 0, mods: 0 },
   timing: { base: 0, mods: 0, rollResult: 0 },
   actionPoints: { current: 5, max: 10, carriedOver: false },
+
+  attacks: {
+    meleeLight:  { dice: 1, base: 0, mods: 0, apCost: 2, rollResult: 0 },
+    meleeHeavy:  { dice: 2, base: 0, mods: 0, apCost: 3, rollResult: 0 },
+    rangedLight: { dice: 1, base: 0, mods: 0, apCost: 2, rollResult: 0 },
+    rangedHeavy: { dice: 2, base: 0, mods: 0, apCost: 3, rollResult: 0 },
+    etherLight:  { dice: 1, base: 0, mods: 0, apCost: 2, rollResult: 0 },
+    etherHeavy:  { dice: 2, base: 0, mods: 0, apCost: 3, rollResult: 0 }
+  },
+
   lastRolls: {}
 };
 
@@ -71,7 +77,6 @@ function AppContent() {
   const { theme } = useTheme();
   const [state, setState] = useState(initialState);
 
-  // Persistence
   useEffect(() => {
     const saved = localStorage.getItem('gameSheet');
     if (saved) setState(JSON.parse(saved));
@@ -81,7 +86,6 @@ function AppContent() {
     localStorage.setItem('gameSheet', JSON.stringify(state));
   }, [state]);
 
-  // Helpers
   const updateState = (key, value) =>
     setState(prev => ({ ...prev, [key]: value }));
 
@@ -103,46 +107,50 @@ function AppContent() {
     return final;
   };
 
-  // PDF Export
   const exportPDF = () => {
     const doc = new jsPDF();
     doc.setFont('helvetica');
-
     let y = 15;
     const line = (text) => { doc.text(text, 15, y); y += 8; };
-
     line(`Player: ${state.playerName}`);
     line(`Character: ${state.characterName} (${state.species})`);
     line(`Health: ${state.health.current} / ${state.health.base + state.health.equip + state.health.mods}`);
     line(`Defense – Physical: ${state.defense.physical}`);
     Object.entries(state.defense.nonPhysical).forEach(([t, v]) => line(`   ${t}: ${v}`));
     line(`Dodge: ${state.dodge.diceCount}d6 + ${state.dodge.base + state.dodge.mods}`);
-    line(`Speed: ${state.speed.base + state.speed.mods} (half: ${Math.floor((state.speed.base + state.speed.mods) / 2)})`);
-    line(`Timing: ${state.timing.base + state.timing.mods}`);
-    line(`AP: ${state.actionPoints.current} (carry: ${state.actionPoints.carriedOver ? '+1' : '0'})`);
-
+    line(`Speed: ${state.speed.base + state.speed.mods}`);
+    line(`AP: ${state.actionPoints.current}`);
     doc.save('character-sheet.pdf');
+  };
+
+  const resetRolls = () => {
+    updateState('dodge', { ...state.dodge, rollResult: 0, lastRolls: [] });
+    updateState('timing', { ...state.timing, rollResult: 0 });
+    const clearedSkills = state.skills.list.map(s => ({ ...s, rollResult: 0, lastRoll: null }));
+    updateState('skills', { ...state.skills, list: clearedSkills });
+    const clearedAttacks = Object.fromEntries(
+      Object.entries(state.attacks).map(([k, a]) => [k, { ...a, rollResult: 0 }])
+    );
+    updateState('attacks', clearedAttacks);
+    updateState('lastRolls', {});
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
       <GlobalBackground />
-      <AppContainer theme={theme}>
-
-        {/* TOP-RIGHT BUTTONS – NO OVERLAP */}
+      <AppContainer>
         <ButtonContainer>
           <ThemeToggle />
-          <ExportButton theme={theme} onClick={exportPDF}>PDF Export</ExportButton>
+          <ExportButton onClick={exportPDF}>PDF Export</ExportButton>
+          <ResetButton onClick={resetRolls}>Reset Rolls</ResetButton>
         </ButtonContainer>
 
         <Header state={state} updateState={updateState} />
-
         <MainGrid>
           <LeftPanel>
             <Dodge state={state} updateState={updateState} rollDice={rollDice} />
             <Skills state={state} updateState={updateState} rollDice={rollDice} />
           </LeftPanel>
-
           <MiddlePanel>
             <Health state={state} updateState={updateState} />
             <Defense state={state} updateState={updateState} />
@@ -150,9 +158,8 @@ function AppContent() {
             <Timing state={state} updateState={updateState} rollDice={rollDice} />
             <ActionPoints state={state} updateState={updateState} />
           </MiddlePanel>
-
           <RightPanel>
-            <Attacks state={state} updateState={updateState} performRoll={performRoll} />
+            <Attacks state={state} updateState={updateState} rollDice={rollDice} />
           </RightPanel>
         </MainGrid>
       </AppContainer>
@@ -160,9 +167,6 @@ function AppContent() {
   );
 }
 
-// ---------------------------------------------------------------------
-//  MAIN APP
-// ---------------------------------------------------------------------
 export default function App() {
   return (
     <ThemeProvider>
@@ -176,77 +180,50 @@ export default function App() {
 // ---------------------------------------------------------------------
 const AppContainer = styled.div`
   position: relative;
-  background: ${props => props.theme.gradient};
-  color: ${props => props.theme.text};
+  background: ${p => p.theme.gradient};
+  color: ${p => p.theme.text};
   font-family: 'Cinzel', serif;
   padding: 20px;
   min-height: 100vh;
   max-width: 1300px;
   margin: 0 auto;
-  border: 3px solid ${props => props.theme.borderAccent};
+  border: 3px solid ${p => p.theme.borderAccent};
   border-radius: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
   overflow-x: hidden;
-
-  @media (max-width: 768px) {
-    padding: 15px;
-    margin: 10px;
-    border-width: 2px;
-  }
-
-  @media (max-width: 480px) {
-    padding: 10px;
-    margin: 5px;
-    border-radius: 8px;
-  }
 `;
 
 const ButtonContainer = styled.div`
   position: fixed;
   top: 12px;
   right: 12px;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   gap: 12px;
   align-items: center;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  @media (max-width: 480px) {
-    top: 8px;
-    right: 8px;
-    gap: 6px;
-  }
 `;
 
 const ExportButton = styled.button`
-  background: ${props => props.theme.button};
-  color: ${props => props.theme.buttonText};
-  border: 2px solid ${props => props.theme.borderAccent};
+  background: ${p => p.theme.button};
+  color: ${p => p.theme.buttonText};
+  border: 2px solid ${p => p.theme.borderAccent};
   padding: 8px 16px;
   border-radius: 25px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
   font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  &:hover { background: ${p => p.theme.buttonHover}; }
+`;
 
-  &:hover {
-    background: ${props => props.theme.buttonHover};
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  }
-
-  @media (max-width: 768px) {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
+const ResetButton = styled.button`
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 13px;
+  &:hover { background: #dc2626; }
 `;
 
 const MainGrid = styled.div`
@@ -254,11 +231,7 @@ const MainGrid = styled.div`
   grid-template-columns: 1fr 2fr 1fr;
   gap: 20px;
   margin-top: 20px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
 `;
 
 const LeftPanel = styled.div``;
