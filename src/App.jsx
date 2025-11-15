@@ -6,7 +6,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 // Theme
-import { ThemeProvider, useTheme } from './context/ThemeContext';
+import ThemeProvider from './context/ThemeContext';
+import { useTheme } from './hooks/useTheme';
 
 // Components
 import Header from './components/Header';
@@ -126,12 +127,12 @@ function AppContent() {
   return (
     <DndProvider backend={HTML5Backend}>
       <GlobalBackground />
-      <AppContainer>
+      <AppContainer theme={theme}>
 
         {/* TOP-RIGHT BUTTONS – NO OVERLAP */}
         <ButtonContainer>
           <ThemeToggle />
-          <ExportButton onClick={exportPDF}>PDF Export</ExportButton>
+          <ExportButton theme={theme} onClick={exportPDF}>PDF Export</ExportButton>
         </ButtonContainer>
 
         <Header state={state} updateState={updateState} />
