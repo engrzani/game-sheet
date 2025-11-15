@@ -6,8 +6,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 // Theme
-import ThemeProvider from './context/ThemeContext';
-import { useTheme } from './hooks/useTheme';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 // Components
 import Header from './components/Header';
@@ -37,44 +36,41 @@ const initialState = {
     otherEffects: ''
   },
 
-  // ONE DODGE OBJECT (diceCount + lastRolls)
   dodge: {
     base: 0,
     mods: 0,
     diceCount: 1,
     rollResult: 0,
-    lastRolls: []          // array of raw dice values
+    lastRolls: []
   },
 
+  // PER-SKILL DUBS + lastRoll
   skills: {
-    dubs: false,
     list: [
-      { name: 'Power',    base: 0, mods: 0, rollResult: 0 },
-      { name: 'Reflexes', base: 0, mods: 0, rollResult: 0 },
-      { name: 'Guts',     base: 0, mods: 0, rollResult: 0 },
-      { name: 'Charm',    base: 0, mods: 0, rollResult: 0 },
-      { name: 'Smarts',   base: 0, mods: 0, rollResult: 0 },
-      { name: 'Psyche',   base: 0, mods: 0, rollResult: 0 },
-      { name: 'Wits',     base: 0, mods: 0, rollResult: 0 }
+      { name: 'Power',    base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Reflexes', base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Guts',     base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Charm',    base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Smarts',   base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Psyche',   base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Wits',     base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null }
     ]
   },
 
   speed: { base: 0, mods: 0 },
   timing: { base: 0, mods: 0, rollResult: 0 },
-
   actionPoints: { current: 5, max: 10, carriedOver: false },
-
-  lastRolls: {}   // for attack results
+  lastRolls: {}
 };
 
 // ---------------------------------------------------------------------
-//  APP CONTENT COMPONENT (uses theme)
+//  APP CONTENT
 // ---------------------------------------------------------------------
 function AppContent() {
   const { theme } = useTheme();
   const [state, setState] = useState(initialState);
 
-  // ---------- persistence ----------
+  // Persistence
   useEffect(() => {
     const saved = localStorage.getItem('gameSheet');
     if (saved) setState(JSON.parse(saved));
@@ -84,7 +80,7 @@ function AppContent() {
     localStorage.setItem('gameSheet', JSON.stringify(state));
   }, [state]);
 
-  // ---------- helpers ----------
+  // Helpers
   const updateState = (key, value) =>
     setState(prev => ({ ...prev, [key]: value }));
 
@@ -106,7 +102,7 @@ function AppContent() {
     return final;
   };
 
-  // ---------- PDF EXPORT ----------
+  // PDF Export
   const exportPDF = () => {
     const doc = new jsPDF();
     doc.setFont('helvetica');
@@ -130,24 +126,22 @@ function AppContent() {
   return (
     <DndProvider backend={HTML5Backend}>
       <GlobalBackground />
-      <AppContainer theme={theme}>
+      <AppContainer>
 
-        {/* Fixed Buttons Container */}
+        {/* TOP-RIGHT BUTTONS – NO OVERLAP */}
         <ButtonContainer>
           <ThemeToggle />
-          <ExportButton theme={theme} onClick={exportPDF}>Export PDF</ExportButton>
+          <ExportButton onClick={exportPDF}>PDF Export</ExportButton>
         </ButtonContainer>
 
         <Header state={state} updateState={updateState} />
 
         <MainGrid>
-          {/* LEFT – rolls & inputs */}
           <LeftPanel>
             <Dodge state={state} updateState={updateState} rollDice={rollDice} />
             <Skills state={state} updateState={updateState} rollDice={rollDice} />
           </LeftPanel>
 
-          {/* MIDDLE – core stats */}
           <MiddlePanel>
             <Health state={state} updateState={updateState} />
             <Defense state={state} updateState={updateState} />
@@ -156,7 +150,6 @@ function AppContent() {
             <ActionPoints state={state} updateState={updateState} />
           </MiddlePanel>
 
-          {/* RIGHT – attacks */}
           <RightPanel>
             <Attacks state={state} updateState={updateState} performRoll={performRoll} />
           </RightPanel>
@@ -167,7 +160,7 @@ function AppContent() {
 }
 
 // ---------------------------------------------------------------------
-//  MAIN APP COMPONENT (provides theme)
+//  MAIN APP
 // ---------------------------------------------------------------------
 export default function App() {
   return (
@@ -178,7 +171,7 @@ export default function App() {
 }
 
 // ---------------------------------------------------------------------
-//  STYLED COMPONENTS
+//  STYLES
 // ---------------------------------------------------------------------
 const AppContainer = styled.div`
   position: relative;
@@ -193,17 +186,14 @@ const AppContainer = styled.div`
   border-radius: 12px;
   transition: all 0.3s ease;
   box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-  
-  /* Fix background overflow issue */
   overflow-x: hidden;
-  
-  /* Responsive padding */
+
   @media (max-width: 768px) {
     padding: 15px;
     margin: 10px;
     border-width: 2px;
   }
-  
+
   @media (max-width: 480px) {
     padding: 10px;
     margin: 5px;
@@ -217,18 +207,18 @@ const ButtonContainer = styled.div`
   right: 12px;
   z-index: 100;
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
-  
+
   @media (max-width: 480px) {
     top: 8px;
     right: 8px;
-    gap: 4px;
+    gap: 6px;
   }
 `;
 
@@ -236,28 +226,25 @@ const ExportButton = styled.button`
   background: ${props => props.theme.button};
   color: ${props => props.theme.buttonText};
   border: 2px solid ${props => props.theme.borderAccent};
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 25px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: static; /* Remove fixed positioning */
-  
-  &:hover { 
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
     background: ${props => props.theme.buttonHover};
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
   }
-  
-  /* Responsive adjustments */
+
   @media (max-width: 768px) {
     padding: 6px 12px;
-    font-size: 14px;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 5px 10px;
-    font-size: 12px;
+    font-size: 13px;
   }
 `;
 
@@ -266,7 +253,7 @@ const MainGrid = styled.div`
   grid-template-columns: 1fr 2fr 1fr;
   gap: 20px;
   margin-top: 20px;
-  
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: 15px;
