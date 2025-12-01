@@ -1,7 +1,8 @@
-import styled from 'styled-components';
 import { Btn, Section } from './SharedStyles';
+import { useTheme } from '../hooks/useTheme';
 
 export default function Speed({ state, updateState }) {
+  const { theme } = useTheme();
   const sp = state.speed;
   const total = sp.base + sp.mods;
   const half = Math.floor(total / 2);
@@ -10,7 +11,7 @@ export default function Speed({ state, updateState }) {
     updateState('speed', { ...sp, [field]: Math.max(0, sp[field] + delta) });
 
   return (
-    <Section>
+    <Section theme={theme} style={{ borderLeftColor: theme.sectionBorderGrey }}>
       <h3>Speed</h3>
       <div>Total: {total}</div>
       <div>Half (rough): {half}</div>

@@ -5,45 +5,107 @@ export default function ActionPoints({ state, updateState }) {
   const { theme } = useTheme();
   const ap = state.actionPoints;
 
-  // src/components/ActionPoints.jsx
+  // Ensure all values are valid numbers with fallbacks
+  const current = Number.isFinite(ap.current) ? ap.current : 5;
+  const baseMax = Number.isFinite(ap.baseMax) ? ap.baseMax : 10;
+  const carriedOver = Boolean(ap.carriedOver);
+
+  // Only +1 AP when ending turn with remaining AP
   const endTurn = () => {
-    const carry = state.actionPoints.current > 0 ? 1 : 0;
+    const bonus = current > 0 ? 1 : 0;
     updateState('actionPoints', {
-      current: 5 + carry,
-      max: 10,
-      carriedOver: carry > 0
+      current: baseMax + bonus,
+      max: baseMax,
+      baseMax: baseMax,
+      carriedOver: bonus > 0
     });
   };
 
-  const adj = delta => {
-    const newCur = Math.max(0, Math.min(10, ap.current + delta));
-    updateState('actionPoints', { ...ap, current: newCur });
+  // Players can adjust current AP for spells/effects - max is 11 (base 10 + 1)
+  const adjCurrent = delta => {
+    const newCur = Math.max(0, Math.min(11, current + delta));
+    updateState('actionPoints', { 
+      current: newCur,
+      max: baseMax,
+      baseMax: baseMax,
+      carriedOver: carriedOver
+    });
   };
 
-  const display = ap.current + (ap.carriedOver ? 1 : 0);
+  // Reset carriedOver status
+  const resetCarryOver = () => {
+    updateState('actionPoints', {
+      current: current,
+      max: baseMax,
+      baseMax: baseMax,
+      carriedOver: false
+    });
+  };
+
+  const adjBaseMax = delta => {
+    const newBaseMax = Math.max(0, Math.min(10, baseMax + delta));
+    const newCurrent = Math.min(current, newBaseMax + (carriedOver ? 1 : 0));
+    updateState('actionPoints', { 
+      current: newCurrent,
+      max: newBaseMax,
+      baseMax: newBaseMax,
+      carriedOver: carriedOver
+    });
+  };
+
+  const backgroundStyle = carriedOver ? '#4a7c4a' : theme.sectionBg;
 
   return (
-    <Section theme={theme} style={{ background: ap.carriedOver ? '#4a7c4a' : theme.sectionBg }}>
-      <h3>Action Points (Max 10)</h3>
-      <div>
-        Current: <strong>{display}</strong>{' '}
-        <Btn theme={theme} onClick={() => adj(1)}>+</Btn>
-        <Btn theme={theme} onClick={() => adj(-1)}>-</Btn>
+    <Section theme={theme} style={{ background: backgroundStyle, borderLeftColor: theme.sectionBorderGrey }}>
+      <h3>Action Points (Max {baseMax}{carriedOver ? '+1' : ''})</h3>
+      
+      <div style={{ marginBottom: '8px', fontSize: '14px' }}>
+        Base Max: <strong>{baseMax}</strong>{' '}
+        <Btn theme={theme} onClick={() => adjBaseMax(1)}>+</Btn>
+        <Btn theme={theme} onClick={() => adjBaseMax(-1)}>-</Btn>
       </div>
-      <button 
-        onClick={endTurn}
-        style={{
-          background: theme.button,
-          color: theme.buttonText,
-          border: 'none',
-          padding: '6px 12px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginTop: '8px'
-        }}
-      >
-        End Turn
-      </button>
+      
+      <div style={{ fontSize: '14px' }}>
+        Current: <strong>{current}</strong>{carriedOver ? ' (+1)' : ''}{' '}
+        <Btn theme={theme} onClick={() => adjCurrent(1)}>+</Btn>
+        <Btn theme={theme} onClick={() => adjCurrent(-1)}>-</Btn>
+      </div>
+      
+      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+        <button 
+          onClick={endTurn}
+          style={{
+            background: theme.button,
+            color: theme.buttonText,
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            flex: 1
+          }}
+        >
+          End Turn
+        </button>
+        {carriedOver && (
+          <button 
+            onClick={resetCarryOver}
+            style={{
+              background: '#ff8800',
+              color: 'white',
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}
+          >
+            Reset +1
+          </button>
+        )}
+      </div>
     </Section>
   );
 }

@@ -17,6 +17,7 @@ import Speed from './components/Speed';
 import Timing from './components/Timing';
 import ActionPoints from './components/ActionPoints';
 import Attacks from './components/Attacks';
+import NotesPanel from './components/NotesPanel';
 import ThemeToggle from './components/ThemeToggle';
 import GlobalBackground from './components/GlobalBackground';
 import CharacterManager from './components/CharacterManager';
@@ -32,7 +33,7 @@ const initialState = {
 
   defense: {
     physical: 0,
-    nonPhysical: { ether: 0, fire: 0, air: 0, water: 0, earth: 0, light: 0, shadow: 0 },
+    nonPhysical: {},
     otherEffects: ''
   },
 
@@ -46,19 +47,19 @@ const initialState = {
 
   skills: {
     list: [
-      { name: 'Power',    base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
-      { name: 'Reflexes', base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
-      { name: 'Guts',     base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
-      { name: 'Charm',    base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
-      { name: 'Smarts',   base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
-      { name: 'Psyche',   base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null },
-      { name: 'Wits',     base: 0, mods: 0, dubs: false, rollResult: 0, lastRoll: null }
+      { name: 'Power',    base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Reflexes', base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Guts',     base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Charm',    base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Smarts',   base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Psyche',   base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Wits',     base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null }
     ]
   },
 
   speed: { base: 0, mods: 0 },
-  timing: { base: 0, mods: 0, rollResult: 0 },
-  actionPoints: { current: 5, max: 10, carriedOver: false },
+  timing: { base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0 },
+  actionPoints: { current: 5, max: 5, baseMax: 5, carriedOver: false },
 
   attacks: {
     meleeLight:  { dice: 1, base: 0, mods: 0, apCost: 2, rollResult: 0 },
@@ -69,7 +70,8 @@ const initialState = {
     etherHeavy:  { dice: 2, base: 0, mods: 0, apCost: 3, rollResult: 0 }
   },
 
-  lastRolls: {}
+  lastRolls: {},
+  notes: ''
 };
 
 // ---------------------------------------------------------------------
@@ -78,26 +80,45 @@ const initialState = {
 function AppContent() {
   const { theme } = useTheme();
   const [state, setState] = useState(initialState);
-  const [currentCharacterId, setCurrentCharacterId] = useState('default');
+  const [currentCharacter, setCurrentCharacter] = useState('default');
   const [showCharacterManager, setShowCharacterManager] = useState(false);
+  const [layoutOrder, setLayoutOrder] = useState(['dodge', 'skills', 'health', 'defense', 'speed', 'timing', 'actionPoints', 'attacks']);
 
   useEffect(() => {
-    const saved = localStorage.getItem(`gameSheet_${currentCharacterId}`);
-    if (saved) setState(JSON.parse(saved));
-  }, [currentCharacterId]);
+    const saved = localStorage.getItem(`gameSheet_${currentCharacter}`);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        const loadedState = data.state || initialState;
+        
+        // Validate and fix actionPoints data to prevent NaN
+        if (loadedState.actionPoints) {
+          loadedState.actionPoints = {
+            current: Number.isFinite(loadedState.actionPoints.current) ? loadedState.actionPoints.current : 5,
+            max: Number.isFinite(loadedState.actionPoints.max) ? loadedState.actionPoints.max : 10,
+            baseMax: Number.isFinite(loadedState.actionPoints.baseMax) ? loadedState.actionPoints.baseMax : 10,
+            carriedOver: Boolean(loadedState.actionPoints.carriedOver)
+          };
+        } else {
+          loadedState.actionPoints = { current: 5, max: 10, baseMax: 10, carriedOver: false };
+        }
+        
+        setState(loadedState);
+        if (data.layoutOrder) {
+          setLayoutOrder(data.layoutOrder);
+        }
+      } catch (error) {
+        console.warn('Failed to load saved data, using initial state:', error);
+        setState(initialState);
+      }
+    }
+    // Update character list from localStorage
+    setCharacterList(getCharacterList());
+  }, [currentCharacter]); // layoutOrder intentionally omitted to avoid infinite loop
 
   useEffect(() => {
-    localStorage.setItem(`gameSheet_${currentCharacterId}`, JSON.stringify(state));
-  }, [state, currentCharacterId]);
-
-  const loadCharacter = (characterId) => {
-    setCurrentCharacterId(characterId);
-    setShowCharacterManager(false);
-  };
-
-  const getCharacterName = () => {
-    return state.characterName || `Character ${currentCharacterId}`;
-  };
+    localStorage.setItem(`gameSheet_${currentCharacter}`, JSON.stringify({ state, layoutOrder }));
+  }, [state, layoutOrder, currentCharacter]);
 
   const updateState = (key, value) =>
     setState(prev => ({ ...prev, [key]: value }));
@@ -148,48 +169,104 @@ function AppContent() {
     updateState('lastRolls', {});
   };
 
+  // Character management functions
+  const getCharacterList = () => {
+    const saved = localStorage.getItem('characterList');
+    return saved ? JSON.parse(saved) : ['default'];
+  };
+
+  const [characterList, setCharacterList] = useState(getCharacterList());
+
+  const switchCharacter = (characterId) => {
+    setCurrentCharacter(characterId);
+    setShowCharacterManager(false);
+  };
+
+  const createCharacter = (name) => {
+    const newList = [...characterList, name];
+    setCharacterList(newList);
+    localStorage.setItem('characterList', JSON.stringify(newList));
+    setCurrentCharacter(name);
+  };
+
+  const deleteCharacter = (name) => {
+    if (characterList.length <= 1) return;
+    const newList = characterList.filter(c => c !== name);
+    setCharacterList(newList);
+    localStorage.setItem('characterList', JSON.stringify(newList));
+    if (currentCharacter === name) {
+      setCurrentCharacter(newList[0]);
+    }
+    // Remove character data
+    localStorage.removeItem(`gameSheet_${name}`);
+  };
+
+  const moveComponent = (fromIndex, toIndex) => {
+    const newOrder = [...layoutOrder];
+    const [moved] = newOrder.splice(fromIndex, 1);
+    newOrder.splice(toIndex, 0, moved);
+    setLayoutOrder(newOrder);
+  };
+
+  const renderComponent = (componentName) => {
+    const components = {
+      dodge: <Dodge key="dodge" state={state} updateState={updateState} rollDice={rollDice} />,
+      skills: <Skills key="skills" state={state} updateState={updateState} rollDice={rollDice} />,
+      health: <Health key="health" state={state} updateState={updateState} />,
+      defense: <Defense key="defense" state={state} updateState={updateState} />,
+      speed: <Speed key="speed" state={state} updateState={updateState} />,
+      timing: <Timing key="timing" state={state} updateState={updateState} rollDice={rollDice} />,
+      actionPoints: <ActionPoints key="actionPoints" state={state} updateState={updateState} />,
+      attacks: <Attacks key="attacks" state={state} updateState={updateState} rollDice={rollDice} performRoll={performRoll} />
+    };
+    return components[componentName];
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <GlobalBackground />
       <AppContainer theme={theme}>
         <ButtonContainer>
-          <ThemeToggle />
-          <CharacterButton theme={theme} onClick={() => setShowCharacterManager(!showCharacterManager)}>
+          <CharacterButton onClick={() => setShowCharacterManager(!showCharacterManager)}>
             📁 Characters
           </CharacterButton>
-          <ExportButton theme={theme} onClick={exportPDF}>PDF Export</ExportButton>
+          <ThemeToggle />
+          <ExportButton onClick={exportPDF}>PDF Export</ExportButton>
           <ResetButton onClick={resetRolls}>Reset Rolls</ResetButton>
         </ButtonContainer>
 
         {showCharacterManager && (
-          <CharacterManager 
-            currentCharacterId={currentCharacterId}
-            onLoadCharacter={loadCharacter}
+          <CharacterManager
+            characters={characterList}
+            currentCharacter={currentCharacter}
+            onCharacterChange={switchCharacter}
+            onCharacterCreate={createCharacter}
+            onCharacterDelete={deleteCharacter}
             onClose={() => setShowCharacterManager(false)}
           />
         )}
 
-        <Header state={state} updateState={updateState} />
-        <ImprovedGrid>
-          <TopRow>
-            <Health state={state} updateState={updateState} />
-            <ActionPoints state={state} updateState={updateState} />
-            <Speed state={state} updateState={updateState} />
-          </TopRow>
-          <MainRow>
-            <LeftSection>
-              <Skills state={state} updateState={updateState} rollDice={rollDice} />
-            </LeftSection>
-            <MiddleSection>
-              <Dodge state={state} updateState={updateState} rollDice={rollDice} />
-              <Timing state={state} updateState={updateState} rollDice={rollDice} />
-            </MiddleSection>
-            <RightSection>
-              <Defense state={state} updateState={updateState} />
-              <Attacks state={state} updateState={updateState} rollDice={rollDice} performRoll={performRoll} />
-            </RightSection>
-          </MainRow>
-        </ImprovedGrid>
+        <Header state={state} updateState={updateState} currentCharacter={currentCharacter} />
+        
+        <FlexibleGrid>
+          {layoutOrder.map((componentName, index) => (
+            <DraggableSection 
+              key={componentName}
+              draggable
+              onDragStart={(e) => e.dataTransfer.setData('text/plain', index.toString())}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                moveComponent(fromIndex, index);
+              }}
+            >
+              {renderComponent(componentName)}
+            </DraggableSection>
+          ))}
+        </FlexibleGrid>
+        
+        <NotesPanel state={state} updateState={updateState} />
       </AppContainer>
     </DndProvider>
   );
@@ -266,17 +343,15 @@ const CharacterButton = styled.button`
   &:hover { background: ${p => p.theme.buttonHover}; }
 `;
 
-const ImprovedGrid = styled.div`
-  display: flex;
-  flex-direction: column;
+const FlexibleGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-top: 20px;
-`;
-
-const TopRow = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 15px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -284,25 +359,15 @@ const TopRow = styled.div`
   }
 `;
 
-const MainRow = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 15px;
+const DraggableSection = styled.div`
+  cursor: move;
+  transition: transform 0.2s ease;
   
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 10px;
+  &:hover {
+    transform: translateY(-2px);
   }
-`;
-
-const LeftSection = styled.div``;
-const MiddleSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-`;
-const RightSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  
+  &[draggable="true"]:active {
+    opacity: 0.8;
+  }
 `;

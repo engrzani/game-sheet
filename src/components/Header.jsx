@@ -3,13 +3,18 @@ import styled from 'styled-components';
 import { Input } from './SharedStyles';
 import { useTheme } from '../hooks/useTheme';
 
-export default function Header({ state, updateState }) {
+export default function Header({ state, updateState, currentCharacter }) {
   const { theme } = useTheme();
   
   return (
     <HeaderContainer theme={theme}>
       <LogoContainer theme={theme}>
         <LogoPlaceholder theme={theme}>🎲</LogoPlaceholder>
+        {currentCharacter && (
+          <CharacterLabel theme={theme}>
+            Character: {currentCharacter}
+          </CharacterLabel>
+        )}
       </LogoContainer>
       <Input
         theme={theme}
@@ -54,8 +59,17 @@ const HeaderContainer = styled.div`
 
 const LogoContainer = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+`;
+
+const CharacterLabel = styled.div`
+  font-size: 10px;
+  color: ${props => props.theme.borderAccent};
+  font-weight: bold;
+  margin-top: 4px;
+  text-align: center;
 `;
 
 const LogoPlaceholder = styled.div`

@@ -23,6 +23,8 @@ export const themes = {
     // Section styling
     sectionBg: '#ffffff',
     sectionBorder: '#ffc107',
+    sectionBorderGrey: '#6c757d',    // For non-rolling components
+    sectionBorderYellow: '#ffc107',  // For rolling components
     
     // Gradient for main container
     gradient: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
@@ -56,6 +58,8 @@ export const themes = {
     // Section styling
     sectionBg: '#3a3a3a',
     sectionBorder: '#ffd700',
+    sectionBorderGrey: '#999999',    // For non-rolling components
+    sectionBorderYellow: '#ffd700',  // For rolling components
     
     // Gradient for main container
     gradient: 'linear-gradient(135deg, #1a1a1a, #2c2c2c)',
