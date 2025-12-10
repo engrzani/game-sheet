@@ -14,7 +14,6 @@ import Defense from './components/Defense';
 import Dodge from './components/Dodge';
 import Skills from './components/Skills';
 import Speed from './components/Speed';
-import Timing from './components/Timing';
 import ActionPoints from './components/ActionPoints';
 import Attacks from './components/Attacks';
 import NotesPanel from './components/NotesPanel';
@@ -53,12 +52,12 @@ const initialState = {
       { name: 'Charm',    base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
       { name: 'Smarts',   base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
       { name: 'Psyche',   base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
-      { name: 'Wits',     base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null }
+      { name: 'Wits',     base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null },
+      { name: 'Timing',   base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0, lastRoll: null }
     ]
   },
 
   speed: { base: 0, mods: 0 },
-  timing: { base: 0, mods: 0, dice: 1, dubs: false, rollResult: 0 },
   actionPoints: { current: 5, max: 5, baseMax: 5, carriedOver: false },
 
   attacks: {
@@ -82,7 +81,7 @@ function AppContent() {
   const [state, setState] = useState(initialState);
   const [currentCharacter, setCurrentCharacter] = useState('default');
   const [showCharacterManager, setShowCharacterManager] = useState(false);
-  const [layoutOrder, setLayoutOrder] = useState(['dodge', 'skills', 'health', 'defense', 'speed', 'timing', 'actionPoints', 'attacks']);
+  const [layoutOrder, setLayoutOrder] = useState(['dodge', 'skills', 'health', 'defense', 'speed', 'actionPoints', 'attacks']);
 
   useEffect(() => {
     const saved = localStorage.getItem(`gameSheet_${currentCharacter}`);
@@ -159,7 +158,6 @@ function AppContent() {
 
   const resetRolls = () => {
     updateState('dodge', { ...state.dodge, rollResult: 0, lastRolls: [] });
-    updateState('timing', { ...state.timing, rollResult: 0 });
     const clearedSkills = state.skills.list.map(s => ({ ...s, rollResult: 0, lastRoll: null }));
     updateState('skills', { ...state.skills, list: clearedSkills });
     const clearedAttacks = Object.fromEntries(
@@ -215,7 +213,6 @@ function AppContent() {
       health: <Health key="health" state={state} updateState={updateState} />,
       defense: <Defense key="defense" state={state} updateState={updateState} />,
       speed: <Speed key="speed" state={state} updateState={updateState} />,
-      timing: <Timing key="timing" state={state} updateState={updateState} rollDice={rollDice} />,
       actionPoints: <ActionPoints key="actionPoints" state={state} updateState={updateState} />,
       attacks: <Attacks key="attacks" state={state} updateState={updateState} rollDice={rollDice} performRoll={performRoll} />
     };

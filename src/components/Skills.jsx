@@ -57,8 +57,8 @@ export default function Skills({ state, updateState, rollDice }) {
   };
 
   return (
-    <Section theme={theme}>
-      <h3>Skillsaves</h3>
+    <Section theme={theme} style={{ borderLeftColor: theme.sectionBorderYellow }}>
+      <h3>Skillsaves & Timing</h3>
       <Grid>
         {s.list.map((skill, i) => (
           <Skill key={skill.name} theme={theme}>
