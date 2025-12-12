@@ -102,6 +102,22 @@ function AppContent() {
           loadedState.actionPoints = { current: 5, max: 10, baseMax: 10, carriedOver: false };
         }
         
+        // Migration: Add Timing to skills if not present (for existing characters)
+        if (loadedState.skills && loadedState.skills.list) {
+          const hasTimingSkill = loadedState.skills.list.some(skill => skill.name === 'Timing');
+          if (!hasTimingSkill) {
+            loadedState.skills.list.push({ 
+              name: 'Timing', 
+              base: 0, 
+              mods: 0, 
+              dice: 1, 
+              dubs: false, 
+              rollResult: 0, 
+              lastRoll: null 
+            });
+          }
+        }
+        
         setState(loadedState);
         if (data.layoutOrder) {
           setLayoutOrder(data.layoutOrder);
