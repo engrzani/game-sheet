@@ -105,7 +105,7 @@ function AppContent() {
         // Migration: Add dice field to all skills if not present (for existing characters)
         if (loadedState.skills && loadedState.skills.list) {
           loadedState.skills.list = loadedState.skills.list.map(skill => {
-            if (!skill.hasOwnProperty('dice')) {
+            if (skill.dice === undefined) {
               return { ...skill, dice: 1 };
             }
             return skill;
