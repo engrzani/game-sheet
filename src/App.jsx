@@ -102,8 +102,16 @@ function AppContent() {
           loadedState.actionPoints = { current: 5, max: 10, baseMax: 10, carriedOver: false };
         }
         
-        // Migration: Add Timing to skills if not present (for existing characters)
+        // Migration: Add dice field to all skills if not present (for existing characters)
         if (loadedState.skills && loadedState.skills.list) {
+          loadedState.skills.list = loadedState.skills.list.map(skill => {
+            if (!skill.hasOwnProperty('dice')) {
+              return { ...skill, dice: 1 };
+            }
+            return skill;
+          });
+          
+          // Add Timing to skills if not present
           const hasTimingSkill = loadedState.skills.list.some(skill => skill.name === 'Timing');
           if (!hasTimingSkill) {
             loadedState.skills.list.push({ 
