@@ -1,27 +1,15 @@
 import styled from 'styled-components';
 import { Btn, Section } from './SharedStyles';
 import { useTheme } from '../hooks/useTheme';
-import { useState } from 'react';
 
 export default function Attacks({ state, updateState, rollDice }) {
   const { theme } = useTheme();
   const ap = state.actionPoints;
-  const [attacks, setAttacks] = useState([
-    { 
-      id: 1, 
-      selectedTypes: { light: false, heavy: false, melee: false, ranged: false, ether: false },
-      dice: 0,
-      base: 0,
-      equip: 0,
-      mods: 0,
-      apCost: 0,
-      dubs: false
-    }
-  ]);
+  const attacks = state.attacks || [];
 
   const addAttack = () => {
     const newId = Math.max(...attacks.map(a => a.id), 0) + 1;
-    setAttacks([...attacks, {
+    updateState('attacks', [...attacks, {
       id: newId,
       selectedTypes: { light: false, heavy: false, melee: false, ranged: false, ether: false },
       dice: 0,
@@ -35,12 +23,12 @@ export default function Attacks({ state, updateState, rollDice }) {
 
   const removeAttack = (id) => {
     if (attacks.length > 1) {
-      setAttacks(attacks.filter(a => a.id !== id));
+      updateState('attacks', attacks.filter(a => a.id !== id));
     }
   };
 
   const toggleType = (attackId, type) => {
-    setAttacks(attacks.map(atk => 
+    updateState('attacks', attacks.map(atk => 
       atk.id === attackId 
         ? { ...atk, selectedTypes: { ...atk.selectedTypes, [type]: !atk.selectedTypes[type] } }
         : atk
@@ -48,7 +36,7 @@ export default function Attacks({ state, updateState, rollDice }) {
   };
 
   const adjustValue = (attackId, field, delta) => {
-    setAttacks(attacks.map(atk =>
+    updateState('attacks', attacks.map(atk =>
       atk.id === attackId
         ? { ...atk, [field]: Math.max(0, atk[field] + delta) }
         : atk
@@ -56,7 +44,7 @@ export default function Attacks({ state, updateState, rollDice }) {
   };
 
   const toggleDubs = (attackId) => {
-    setAttacks(attacks.map(atk =>
+    updateState('attacks', attacks.map(atk =>
       atk.id === attackId
         ? { ...atk, dubs: !atk.dubs }
         : atk
@@ -64,7 +52,7 @@ export default function Attacks({ state, updateState, rollDice }) {
   };
 
   const setApCost = (attackId, value) => {
-    setAttacks(attacks.map(atk =>
+    updateState('attacks', attacks.map(atk =>
       atk.id === attackId
         ? { ...atk, apCost: Math.max(0, Math.min(5, value)) }
         : atk

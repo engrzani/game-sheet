@@ -60,14 +60,18 @@ const initialState = {
   speed: { base: 0, mods: 0 },
   actionPoints: { current: 5, max: 5, baseMax: 5, carriedOver: false },
 
-  attacks: {
-    meleeLight:  { dice: 1, base: 0, mods: 0, apCost: 2, rollResult: 0 },
-    meleeHeavy:  { dice: 2, base: 0, mods: 0, apCost: 3, rollResult: 0 },
-    rangedLight: { dice: 1, base: 0, mods: 0, apCost: 2, rollResult: 0 },
-    rangedHeavy: { dice: 2, base: 0, mods: 0, apCost: 3, rollResult: 0 },
-    etherLight:  { dice: 1, base: 0, mods: 0, apCost: 2, rollResult: 0 },
-    etherHeavy:  { dice: 2, base: 0, mods: 0, apCost: 3, rollResult: 0 }
-  },
+  attacks: [
+    { 
+      id: 1, 
+      selectedTypes: { light: false, heavy: false, melee: false, ranged: false, ether: false },
+      dice: 0,
+      base: 0,
+      equip: 0,
+      mods: 0,
+      apCost: 0,
+      dubs: false
+    }
+  ],
 
   lastRolls: {},
   notes: ''
@@ -124,6 +128,22 @@ function AppContent() {
               lastRoll: null 
             });
           }
+        }
+        
+        // Migration: Convert old attacks object to new array structure
+        if (loadedState.attacks && !Array.isArray(loadedState.attacks)) {
+          loadedState.attacks = [
+            { 
+              id: 1, 
+              selectedTypes: { light: false, heavy: false, melee: false, ranged: false, ether: false },
+              dice: 0,
+              base: 0,
+              equip: 0,
+              mods: 0,
+              apCost: 0,
+              dubs: false
+            }
+          ];
         }
         
         setState(loadedState);
@@ -184,10 +204,6 @@ function AppContent() {
     updateState('dodge', { ...state.dodge, rollResult: 0, lastRolls: [] });
     const clearedSkills = state.skills.list.map(s => ({ ...s, rollResult: 0, lastRoll: null }));
     updateState('skills', { ...state.skills, list: clearedSkills });
-    const clearedAttacks = Object.fromEntries(
-      Object.entries(state.attacks).map(([k, a]) => [k, { ...a, rollResult: 0 }])
-    );
-    updateState('attacks', clearedAttacks);
     updateState('lastRolls', {});
   };
 
