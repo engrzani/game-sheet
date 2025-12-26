@@ -9,7 +9,7 @@ export default function Attacks({ state, updateState, rollDice }) {
 
   const addAttack = () => {
     const newId = Math.max(...attacks.map(a => a.id), 0) + 1;
-    updateState('attacks', [...attacks, {
+    const newAttacks = [...attacks, {
       id: newId,
       selectedTypes: { light: false, heavy: false, melee: false, ranged: false, ether: false },
       dice: 0,
@@ -18,7 +18,8 @@ export default function Attacks({ state, updateState, rollDice }) {
       mods: 0,
       apCost: 0,
       dubs: false
-    }]);
+    }];
+    updateState('attacks', newAttacks);
   };
 
   const removeAttack = (id) => {

@@ -131,7 +131,7 @@ function AppContent() {
         }
         
         // Migration: Convert old attacks object to new array structure
-        if (loadedState.attacks && !Array.isArray(loadedState.attacks)) {
+        if (!loadedState.attacks || !Array.isArray(loadedState.attacks)) {
           loadedState.attacks = [
             { 
               id: 1, 
@@ -144,6 +144,18 @@ function AppContent() {
               dubs: false
             }
           ];
+        } else {
+          // Ensure all existing attacks have the required structure and unique IDs
+          loadedState.attacks = loadedState.attacks.map((attack, index) => ({
+            id: attack.id || (index + 1),
+            selectedTypes: attack.selectedTypes || { light: false, heavy: false, melee: false, ranged: false, ether: false },
+            dice: attack.dice || 0,
+            base: attack.base || 0,
+            equip: attack.equip || 0,
+            mods: attack.mods || 0,
+            apCost: attack.apCost || 0,
+            dubs: attack.dubs || false
+          }));
         }
         
         setState(loadedState);
