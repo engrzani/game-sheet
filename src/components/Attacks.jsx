@@ -9,15 +9,17 @@ export default function Attacks({ state, updateState, rollDice }) {
 
   const addAttack = () => {
     const newId = Math.max(...attacks.map(a => a.id), 0) + 1;
+    // Copy values from the last attack to create connection
+    const lastAttack = attacks[attacks.length - 1];
     const newAttacks = [...attacks, {
       id: newId,
-      selectedTypes: { light: false, heavy: false, melee: false, ranged: false, ether: false },
-      dice: 0,
-      base: 0,
-      equip: 0,
-      mods: 0,
-      apCost: 0,
-      dubs: false
+      selectedTypes: { ...lastAttack.selectedTypes },
+      dice: lastAttack.dice,
+      base: lastAttack.base,
+      equip: lastAttack.equip,
+      mods: lastAttack.mods,
+      apCost: lastAttack.apCost,
+      dubs: lastAttack.dubs
     }];
     updateState('attacks', newAttacks);
   };
@@ -29,76 +31,92 @@ export default function Attacks({ state, updateState, rollDice }) {
   };
 
   const toggleType = (attackId, type) => {
-    updateState('attacks', attacks.map(atk => 
-      atk.id === attackId 
-        ? { ...atk, selectedTypes: { ...atk.selectedTypes, [type]: !atk.selectedTypes[type] } }
-        : atk
-    ));
+    const newAttacks = attacks.map(atk => {
+      if (atk.id !== attackId) return atk;
+      return { 
+        ...atk, 
+        selectedTypes: { 
+          ...atk.selectedTypes, 
+          [type]: !atk.selectedTypes[type] 
+        } 
+      };
+    });
+    updateState('attacks', newAttacks);
   };
 
   const adjustValue = (attackId, field, delta) => {
-    updateState('attacks', attacks.map(atk =>
-      atk.id === attackId
-        ? { ...atk, [field]: Math.max(0, atk[field] + delta) }
-        : atk
-    ));
+    const newAttacks = attacks.map(atk => {
+      if (atk.id !== attackId) return atk;
+      return { 
+        ...atk, 
+        [field]: Math.max(0, (atk[field] || 0) + delta) 
+      };
+    });
+    updateState('attacks', newAttacks);
   };
 
   const toggleDubs = (attackId) => {
-    updateState('attacks', attacks.map(atk =>
-      atk.id === attackId
-        ? { ...atk, dubs: !atk.dubs }
-        : atk
-    ));
+    const newAttacks = attacks.map(atk => {
+      if (atk.id !== attackId) return atk;
+      return { ...atk, dubs: !atk.dubs };
+    });
+    updateState('attacks', newAttacks);
   };
 
   const setApCost = (attackId, value) => {
-    updateState('attacks', attacks.map(atk =>
-      atk.id === attackId
-        ? { ...atk, apCost: Math.max(0, Math.min(5, value)) }
-        : atk
-    ));
+    const newAttacks = attacks.map(atk => {
+      if (atk.id !== attackId) return atk;
+      const numValue = parseInt(value) || 0;
+      return { 
+        ...atk, 
+        apCost: Math.max(0, Math.min(5, numValue)) 
+      };
+    });
+    updateState('attacks', newAttacks);
   };
 
   const rollAttack = (attack) => {
-    if (attack.apCost > 0 && ap.current < attack.apCost) {
+    // Create a copy to ensure no reference sharing
+    const attackCopy = { ...attack };
+    
+    if (attackCopy.apCost > 0 && ap.current < attackCopy.apCost) {
       alert('Not enough AP!');
       return;
     }
 
-    if (attack.apCost > 0) {
+    if (attackCopy.apCost > 0) {
       updateState('actionPoints', { 
         ...ap, 
-        current: ap.current - attack.apCost 
+        current: ap.current - attackCopy.apCost 
       });
     }
     
-    if (rollDice && attack.dice > 0) {
-      const r1 = rollDice(6, attack.dice);
+    if (rollDice && attackCopy.dice > 0) {
+      const r1 = rollDice(6, attackCopy.dice);
       let finalRoll = r1.total;
       let displayRolls = r1.rolls;
       
-      if (attack.dubs) {
-        const r2 = rollDice(6, attack.dice);
+      if (attackCopy.dubs) {
+        const r2 = rollDice(6, attackCopy.dice);
         // Combine both sets and choose best N dice
         const allDice = [...r1.rolls, ...r2.rolls];
         const sorted = [...allDice].sort((a, b) => b - a);
-        const bestDice = sorted.slice(0, attack.dice);
+        const bestDice = sorted.slice(0, attackCopy.dice);
         finalRoll = bestDice.reduce((sum, val) => sum + val, 0);
         // Display: best dice / other dice
-        const otherDice = sorted.slice(attack.dice);
+        const otherDice = sorted.slice(attackCopy.dice);
         displayRolls = [...bestDice, '/', ...otherDice];
       }
       
-      const bonus = attack.base + attack.equip + attack.mods;
+      const bonus = (attackCopy.base || 0) + (attackCopy.equip || 0) + (attackCopy.mods || 0);
       const total = finalRoll + bonus;
       
       // Build full word label
-      const typeWords = Object.entries(attack.selectedTypes)
+      const typeWords = Object.entries(attackCopy.selectedTypes)
         .filter(([, checked]) => checked)
         .map(([type]) => type.charAt(0).toUpperCase() + type.slice(1));
       
-      const label = typeWords.length > 0 ? typeWords.join(' ') : `Attack #${attack.id}`;
+      const label = typeWords.length > 0 ? typeWords.join(' ') : `Attack #${attackCopy.id}`;
       
       // Format display properly
       const formattedDisplay = displayRolls.map(r => r === '/' ? ' / ' : r).join(', ').replace(', / ,', ' /');
