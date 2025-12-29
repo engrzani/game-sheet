@@ -169,14 +169,10 @@ export default function Attacks({ state, updateState, rollDice }) {
 
               <StatsColumn>
                 <StatRow>
-                  <StatLabel>Roll</StatLabel>
+                  <StatLabel>Dice</StatLabel>
                   <StatValue>{attack.dice}</StatValue>
                   <Btn theme={theme} onClick={() => adjustValue(attack.id, 'dice', 1)}>+</Btn>
                   <Btn theme={theme} onClick={() => adjustValue(attack.id, 'dice', -1)}>-</Btn>
-                </StatRow>
-
-                <StatRow>
-                  <StatLabel>Dice</StatLabel>
                 </StatRow>
 
                 <StatRow>

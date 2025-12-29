@@ -64,15 +64,15 @@ export default function Dodge({ state, updateState, rollDice }) {
       <DodgeLayout>
         <MainColumn>
           <div style={{ fontSize: '15px', marginBottom: '6px' }}>
+            Dice: {d.diceCount} <Btn theme={theme} onClick={() => adj('diceCount', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('diceCount', -1)}>-</Btn>
+          </div>
+
+          <div style={{ fontSize: '15px', marginBottom: '6px' }}>
             Base: {d.base} <Btn theme={theme} onClick={() => adj('base', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('base', -1)}>-</Btn>
           </div>
 
           <div style={{ fontSize: '15px', marginBottom: '6px' }}>
             Mods: {d.mods} <Btn theme={theme} onClick={() => adj('mods', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('mods', -1)}>-</Btn>
-          </div>
-
-          <div style={{ fontSize: '15px', marginBottom: '6px' }}>
-            Dice: {d.diceCount} <Btn theme={theme} onClick={() => adj('diceCount', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('diceCount', -1)}>-</Btn>
           </div>
           
           <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px' }}>
