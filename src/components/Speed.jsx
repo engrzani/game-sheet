@@ -17,13 +17,13 @@ export default function Speed({ state, updateState }) {
       <div>Half (rough): {half}</div>
       <div>
         Base: {sp.base}{' '}
-        <Btn onClick={() => adj('base', 1)}>+</Btn>
-        <Btn onClick={() => adj('base', -1)}>-</Btn>
+        <Btn theme={theme} onClick={() => adj('base', 1)}>+</Btn>
+        <Btn theme={theme} onClick={() => adj('base', -1)}>-</Btn>
       </div>
       <div>
         Mods: {sp.mods}{' '}
-        <Btn onClick={() => adj('mods', 1)}>+</Btn>
-        <Btn onClick={() => adj('mods', -1)}>-</Btn>
+        <Btn theme={theme} onClick={() => adj('mods', 1)}>+</Btn>
+        <Btn theme={theme} onClick={() => adj('mods', -1)}>-</Btn>
       </div>
     </Section>
   );

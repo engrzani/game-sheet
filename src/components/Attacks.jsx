@@ -258,9 +258,13 @@ export default function Attacks({ state, updateState, rollDice }) {
 
 const AttacksGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   margin-bottom: 16px;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const AttackBlock = styled.div`

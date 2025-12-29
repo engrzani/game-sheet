@@ -9,6 +9,13 @@ export default function Health({ state, updateState }) {
   const h = state.health;
   const max = h.base + h.equip + h.mods;
   const [adjustValue, setAdjustValue] = useState(1);
+  const [conditions, setConditions] = useState({
+    bloodied: false,
+    wounded: false,
+    critical: false,
+    dying: false,
+    stabilized: false
+  });
 
   const adj = (field, delta) => {
     let newValue = h[field] + delta;
@@ -31,6 +38,10 @@ export default function Health({ state, updateState }) {
     setAdjustValue(Math.max(0, val));
   };
 
+  const toggleCondition = (key) => {
+    setConditions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   return (
     <Section theme={theme} style={{ borderLeftColor: theme.sectionBorderGrey }}>
       <h3>Health</h3>
@@ -39,63 +50,83 @@ export default function Health({ state, updateState }) {
         <strong>Maximum Health: {max}</strong>
       </MaxHealthDisplay>
 
-      <CurrentHealthSection theme={theme}>
-        <CurrentHealthLabel>Current Health</CurrentHealthLabel>
-        <CurrentHealthValue theme={theme}>{h.current}</CurrentHealthValue>
+      <HealthLayout>
+        <MainColumn>
+          <CurrentHealthSection theme={theme}>
+            <CurrentHealthLabel>Current Health</CurrentHealthLabel>
+            <CurrentHealthValue theme={theme}>{h.current}</CurrentHealthValue>
+            
+            <AdjustmentRow>
+              <AdjustLabel>Adjust by:</AdjustLabel>
+              <AdjustInput 
+                theme={theme}
+                type="number" 
+                value={adjustValue} 
+                onChange={handleAdjustValueChange}
+                min="0"
+              />
+              <ButtonGroup>
+                <Btn theme={theme} onClick={() => adj('current', adjustValue)}>+</Btn>
+                <Btn theme={theme} onClick={() => adj('current', -adjustValue)}>-</Btn>
+              </ButtonGroup>
+            </AdjustmentRow>
+          </CurrentHealthSection>
+
+          <Divider theme={theme} />
+
+          <SmallStatRow theme={theme}>
+            <label>Temp:</label>
+            <span>{h.temp}</span>
+            <ButtonGroup>
+              <Btn theme={theme} onClick={() => adj('temp', 1)}>+</Btn>
+              <Btn theme={theme} onClick={() => adj('temp', -1)}>-</Btn>
+            </ButtonGroup>
+          </SmallStatRow>
+
+          <SmallStatRow theme={theme}>
+            <label>Base:</label>
+            <span>{h.base}</span>
+            <ButtonGroup>
+              <Btn theme={theme} onClick={() => adj('base', 1)}>+</Btn>
+              <Btn theme={theme} onClick={() => adj('base', -1)}>-</Btn>
+            </ButtonGroup>
+          </SmallStatRow>
+
+          <SmallStatRow theme={theme}>
+            <label>Equip:</label>
+            <span>{h.equip}</span>
+            <ButtonGroup>
+              <Btn theme={theme} onClick={() => adj('equip', 1)}>+</Btn>
+              <Btn theme={theme} onClick={() => adj('equip', -1)}>-</Btn>
+            </ButtonGroup>
+          </SmallStatRow>
+
+          <SmallStatRow theme={theme}>
+            <label>Mods:</label>
+            <span>{h.mods}</span>
+            <ButtonGroup>
+              <Btn theme={theme} onClick={() => adj('mods', 1)}>+</Btn>
+              <Btn theme={theme} onClick={() => adj('mods', -1)}>-</Btn>
+            </ButtonGroup>
+          </SmallStatRow>
+        </MainColumn>
         
-        <AdjustmentRow>
-          <AdjustLabel>Adjust by:</AdjustLabel>
-          <AdjustInput 
-            theme={theme}
-            type="number" 
-            value={adjustValue} 
-            onChange={handleAdjustValueChange}
-            min="0"
-          />
-          <ButtonGroup>
-            <Btn theme={theme} onClick={() => adj('current', adjustValue)}>+</Btn>
-            <Btn theme={theme} onClick={() => adj('current', -adjustValue)}>-</Btn>
-          </ButtonGroup>
-        </AdjustmentRow>
-      </CurrentHealthSection>
-
-      <Divider theme={theme} />
-
-      <SmallStatRow theme={theme}>
-        <label>Temp:</label>
-        <span>{h.temp}</span>
-        <ButtonGroup>
-          <Btn theme={theme} onClick={() => adj('temp', 1)}>+</Btn>
-          <Btn theme={theme} onClick={() => adj('temp', -1)}>-</Btn>
-        </ButtonGroup>
-      </SmallStatRow>
-
-      <SmallStatRow theme={theme}>
-        <label>Base:</label>
-        <span>{h.base}</span>
-        <ButtonGroup>
-          <Btn theme={theme} onClick={() => adj('base', 1)}>+</Btn>
-          <Btn theme={theme} onClick={() => adj('base', -1)}>-</Btn>
-        </ButtonGroup>
-      </SmallStatRow>
-
-      <SmallStatRow theme={theme}>
-        <label>Equip:</label>
-        <span>{h.equip}</span>
-        <ButtonGroup>
-          <Btn theme={theme} onClick={() => adj('equip', 1)}>+</Btn>
-          <Btn theme={theme} onClick={() => adj('equip', -1)}>-</Btn>
-        </ButtonGroup>
-      </SmallStatRow>
-
-      <SmallStatRow theme={theme}>
-        <label>Mods:</label>
-        <span>{h.mods}</span>
-        <ButtonGroup>
-          <Btn theme={theme} onClick={() => adj('mods', 1)}>+</Btn>
-          <Btn theme={theme} onClick={() => adj('mods', -1)}>-</Btn>
-        </ButtonGroup>
-      </SmallStatRow>
+        <ConditionsColumn theme={theme}>
+          <ConditionLabel>Conditions:</ConditionLabel>
+          {Object.entries(conditions).map(([key, value]) => (
+            <ConditionRow key={key}>
+              <ConditionToggle
+                theme={theme}
+                $active={value}
+                onClick={() => toggleCondition(key)}
+              >
+                {value ? 'Yes' : 'No'}
+              </ConditionToggle>
+              <ConditionName>{key.charAt(0).toUpperCase() + key.slice(1)}</ConditionName>
+            </ConditionRow>
+          ))}
+        </ConditionsColumn>
+      </HealthLayout>
     </Section>
   );
 }
@@ -188,4 +219,59 @@ const SmallStatRow = styled.div`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 3px;
+`;
+
+const HealthLayout = styled.div`
+  display: flex;
+  gap: 16px;
+`;
+
+const MainColumn = styled.div`
+  flex: 1;
+`;
+
+const ConditionsColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 110px;
+  padding: 8px;
+  background: ${props => props.theme.inputBg};
+  border-radius: 4px;
+  border: 1px solid ${props => props.theme.border};
+`;
+
+const ConditionLabel = styled.div`
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  text-align: center;
+`;
+
+const ConditionRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const ConditionToggle = styled.button`
+  background: ${props => props.$active ? props.theme.borderAccent : props.theme.sectionBg};
+  color: ${props => props.$active ? '#000' : props.theme.text};
+  border: 1px solid ${props => props.theme.border};
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 35px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const ConditionName = styled.span`
+  font-size: 12px;
+  font-weight: 500;
 `;
