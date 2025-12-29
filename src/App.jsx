@@ -301,6 +301,7 @@ function AppContent() {
           {layoutOrder.map((componentName, index) => (
             <DraggableSection 
               key={componentName}
+              data-component={componentName}
               draggable
               onDragStart={(e) => e.dataTransfer.setData('text/plain', index.toString())}
               onDragOver={(e) => e.preventDefault()}
@@ -418,5 +419,10 @@ const DraggableSection = styled.div`
   
   &[draggable="true"]:active {
     opacity: 0.8;
+  }
+  
+  /* Make attacks component span full width */
+  &[data-component="attacks"] {
+    grid-column: 1 / -1;
   }
 `;
