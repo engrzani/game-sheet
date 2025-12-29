@@ -137,19 +137,18 @@ export default function Attacks({ state, updateState, rollDice }) {
   ];
 
   return (
-    <Section theme={theme} style={{ borderLeftColor: theme.sectionBorderYellow }}>
-      <h3>Attacks</h3>
-      
-      <AttacksGrid>
+    <>
       {attacks.map((attack, index) => (
-        <AttackBlock key={attack.id} theme={theme}>
+        <Section key={attack.id} theme={theme} style={{ borderLeftColor: theme.sectionBorderYellow }}>
           <AttackHeader theme={theme}>
             <AttackTitle>Attack #{index + 1}</AttackTitle>
-            {attacks.length > 1 && (
-              <RemoveButton theme={theme} onClick={() => removeAttack(attack.id)}>
-                Remove
-              </RemoveButton>
-            )}
+            <HeaderButtons>
+              {attacks.length > 1 && (
+                <RemoveButton theme={theme} onClick={() => removeAttack(attack.id)}>
+                  Remove
+                </RemoveButton>
+              )}
+            </HeaderButtons>
           </AttackHeader>
           
           <AttackLayout>
@@ -233,46 +232,29 @@ export default function Attacks({ state, updateState, rollDice }) {
           <RollButton theme={theme} onClick={() => rollAttack(attack)}>
             Roll Attack #{index + 1}
           </RollButton>
-        </AttackBlock>
+        </Section>
       ))}
-      </AttacksGrid>
       
-      <AddAttackButton theme={theme} onClick={addAttack}>
-        + Add New Attack
-      </AddAttackButton>
+      <Section theme={theme} style={{ borderLeftColor: theme.sectionBorderYellow }}>
+        <AddAttackButton theme={theme} onClick={addAttack}>
+          + Add New Attack
+        </AddAttackButton>
 
-      {Object.keys(state.lastRolls).length > 0 && (
-        <LastRollsSection>
-          <h4 style={{ marginTop: '16px', marginBottom: '8px', fontSize: '15px' }}>Last Rolls</h4>
-          {Object.entries(state.lastRolls).map(([k, v]) => (
-            <RollEntry key={k} theme={theme}>
-              <RollLabel>{k}:</RollLabel>
-              <RollValue>{v}</RollValue>
-            </RollEntry>
-          ))}
-        </LastRollsSection>
-      )}
-    </Section>
+        {Object.keys(state.lastRolls).length > 0 && (
+          <LastRollsSection>
+            <h4 style={{ marginTop: '16px', marginBottom: '8px', fontSize: '15px' }}>Last Rolls</h4>
+            {Object.entries(state.lastRolls).map(([k, v]) => (
+              <RollEntry key={k} theme={theme}>
+                <RollLabel>{k}:</RollLabel>
+                <RollValue>{v}</RollValue>
+              </RollEntry>
+            ))}
+          </LastRollsSection>
+        )}
+      </Section>
+    </>
   );
 }
-
-const AttacksGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
-  
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const AttackBlock = styled.div`
-  background: ${props => props.theme.inputBg};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 6px;
-  padding: 12px;
-`;
 
 const AttackHeader = styled.div`
   display: flex;
@@ -281,10 +263,14 @@ const AttackHeader = styled.div`
   margin-bottom: 12px;
 `;
 
-const AttackTitle = styled.h4`
+const AttackTitle = styled.h3`
   margin: 0;
-  font-size: 15px;
-  color: ${props => props.theme.borderAccent};
+  font-size: 16px;
+`;
+
+const HeaderButtons = styled.div`
+  display: flex;
+  gap: 8px;
 `;
 
 const RemoveButton = styled.button`
@@ -308,6 +294,7 @@ const AttackLayout = styled.div`
   border: 1px solid ${props => props.theme.border};
   padding: 12px;
   border-radius: 6px;
+  background: ${props => props.theme.inputBg};
 `;
 
 const CheckboxColumn = styled.div`
@@ -466,7 +453,6 @@ const AddAttackButton = styled.button`
   cursor: pointer;
   font-weight: bold;
   font-size: 15px;
-  margin-top: 8px;
   transition: all 0.2s ease;
   
   &:hover {
