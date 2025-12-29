@@ -138,102 +138,104 @@ export default function Attacks({ state, updateState, rollDice }) {
 
   return (
     <>
-      {attacks.map((attack, index) => (
-        <Section key={attack.id} theme={theme} style={{ borderLeftColor: theme.sectionBorderYellow }}>
-          <AttackHeader theme={theme}>
-            <AttackTitle>Attack #{index + 1}</AttackTitle>
-            <HeaderButtons>
-              {attacks.length > 1 && (
-                <RemoveButton theme={theme} onClick={() => removeAttack(attack.id)}>
-                  Remove
-                </RemoveButton>
-              )}
-            </HeaderButtons>
-          </AttackHeader>
-          
-          <AttackLayout>
-            <CheckboxColumn>
-              <CheckboxLabel>Check Types:</CheckboxLabel>
-              {attackTypes.map(({ key, label }) => (
-                <CheckboxRow key={key}>
-                  <Checkbox 
-                    type="checkbox" 
-                    checked={attack.selectedTypes[key]}
-                    onChange={() => toggleType(attack.id, key)}
+      <AttacksGrid>
+        {attacks.map((attack, index) => (
+          <Section key={attack.id} theme={theme} style={{ borderLeftColor: theme.sectionBorderYellow }}>
+            <AttackHeader theme={theme}>
+              <AttackTitle>Attack #{index + 1}</AttackTitle>
+              <HeaderButtons>
+                {attacks.length > 1 && (
+                  <RemoveButton theme={theme} onClick={() => removeAttack(attack.id)}>
+                    Remove
+                  </RemoveButton>
+                )}
+              </HeaderButtons>
+            </AttackHeader>
+            
+            <AttackLayout>
+              <CheckboxColumn>
+                <CheckboxLabel>Check Types:</CheckboxLabel>
+                {attackTypes.map(({ key, label }) => (
+                  <CheckboxRow key={key}>
+                    <Checkbox 
+                      type="checkbox" 
+                      checked={attack.selectedTypes[key]}
+                      onChange={() => toggleType(attack.id, key)}
+                    />
+                    <Label>{label}</Label>
+                  </CheckboxRow>
+                ))}
+              </CheckboxColumn>
+
+              <StatsColumn>
+                <StatRow>
+                  <StatLabel>Roll</StatLabel>
+                  <StatValue>{attack.dice}</StatValue>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'dice', 1)}>+</Btn>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'dice', -1)}>-</Btn>
+                </StatRow>
+
+                <StatRow>
+                  <StatLabel>Dice</StatLabel>
+                </StatRow>
+
+                <StatRow>
+                  <StatLabel>+ Base</StatLabel>
+                  <StatValue>{attack.base}</StatValue>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'base', 1)}>+</Btn>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'base', -1)}>-</Btn>
+                </StatRow>
+
+                <StatRow>
+                  <StatLabel>+ Equip</StatLabel>
+                  <StatValue>{attack.equip}</StatValue>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'equip', 1)}>+</Btn>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'equip', -1)}>-</Btn>
+                </StatRow>
+
+                <StatRow>
+                  <StatLabel>+ Mods</StatLabel>
+                  <StatValue>{attack.mods}</StatValue>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'mods', 1)}>+</Btn>
+                  <Btn theme={theme} onClick={() => adjustValue(attack.id, 'mods', -1)}>-</Btn>
+                </StatRow>
+              </StatsColumn>
+
+              <APColumn>
+                <APLabel>AP cost</APLabel>
+                <APInputBox>
+                  <APInput 
+                    type="number"
+                    value={attack.apCost}
+                    onChange={(e) => setApCost(attack.id, parseInt(e.target.value) || 0)}
+                    min="0"
+                    max="5"
                   />
-                  <Label>{label}</Label>
-                </CheckboxRow>
-              ))}
-            </CheckboxColumn>
-
-            <StatsColumn>
-              <StatRow>
-                <StatLabel>Roll</StatLabel>
-                <StatValue>{attack.dice}</StatValue>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'dice', 1)}>+</Btn>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'dice', -1)}>-</Btn>
-              </StatRow>
-
-              <StatRow>
-                <StatLabel>Dice</StatLabel>
-              </StatRow>
-
-              <StatRow>
-                <StatLabel>+ Base</StatLabel>
-                <StatValue>{attack.base}</StatValue>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'base', 1)}>+</Btn>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'base', -1)}>-</Btn>
-              </StatRow>
-
-              <StatRow>
-                <StatLabel>+ Equip</StatLabel>
-                <StatValue>{attack.equip}</StatValue>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'equip', 1)}>+</Btn>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'equip', -1)}>-</Btn>
-              </StatRow>
-
-              <StatRow>
-                <StatLabel>+ Mods</StatLabel>
-                <StatValue>{attack.mods}</StatValue>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'mods', 1)}>+</Btn>
-                <Btn theme={theme} onClick={() => adjustValue(attack.id, 'mods', -1)}>-</Btn>
-              </StatRow>
-            </StatsColumn>
-
-            <APColumn>
-              <APLabel>AP cost</APLabel>
-              <APInputBox>
-                <APInput 
-                  type="number"
-                  value={attack.apCost}
-                  onChange={(e) => setApCost(attack.id, parseInt(e.target.value) || 0)}
-                  min="0"
-                  max="5"
+                </APInputBox>
+                <APNote>0-5, number selected</APNote>
+                <APNote>Reduces AP by</APNote>
+                <APNote>that amount</APNote>
+              </APColumn>
+            </AttackLayout>
+            
+            <DubsRow>
+              <DubsCheckbox>
+                <input 
+                  type="checkbox" 
+                  checked={attack.dubs}
+                  onChange={() => toggleDubs(attack.id)}
+                  id={`attack-dubs-${attack.id}`}
                 />
-              </APInputBox>
-              <APNote>0-5, number selected</APNote>
-              <APNote>Reduces AP by</APNote>
-              <APNote>that amount</APNote>
-            </APColumn>
-          </AttackLayout>
-          
-          <DubsRow>
-            <DubsCheckbox>
-              <input 
-                type="checkbox" 
-                checked={attack.dubs}
-                onChange={() => toggleDubs(attack.id)}
-                id={`attack-dubs-${attack.id}`}
-              />
-              <label htmlFor={`attack-dubs-${attack.id}`}>Dubs/Nubs</label>
-            </DubsCheckbox>
-          </DubsRow>
+                <label htmlFor={`attack-dubs-${attack.id}`}>Dubs/Nubs</label>
+              </DubsCheckbox>
+            </DubsRow>
 
-          <RollButton theme={theme} onClick={() => rollAttack(attack)}>
-            Roll Attack #{index + 1}
-          </RollButton>
-        </Section>
-      ))}
+            <RollButton theme={theme} onClick={() => rollAttack(attack)}>
+              Roll Attack #{index + 1}
+            </RollButton>
+          </Section>
+        ))}
+      </AttacksGrid>
       
       <Section theme={theme} style={{ borderLeftColor: theme.sectionBorderYellow }}>
         <AddAttackButton theme={theme} onClick={addAttack}>
@@ -255,6 +257,16 @@ export default function Attacks({ state, updateState, rollDice }) {
     </>
   );
 }
+
+const AttacksGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+  }
+`;
 
 const AttackHeader = styled.div`
   display: flex;
