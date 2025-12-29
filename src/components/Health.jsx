@@ -9,13 +9,6 @@ export default function Health({ state, updateState }) {
   const h = state.health;
   const max = h.base + h.equip + h.mods;
   const [adjustValue, setAdjustValue] = useState(1);
-  const [conditions, setConditions] = useState({
-    bloodied: false,
-    wounded: false,
-    critical: false,
-    dying: false,
-    stabilized: false
-  });
 
   const adj = (field, delta) => {
     let newValue = h[field] + delta;
@@ -36,10 +29,6 @@ export default function Health({ state, updateState }) {
   const handleAdjustValueChange = (e) => {
     const val = parseInt(e.target.value) || 0;
     setAdjustValue(Math.max(0, val));
-  };
-
-  const toggleCondition = (key) => {
-    setConditions(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
@@ -84,22 +73,6 @@ export default function Health({ state, updateState }) {
             <Btn theme={theme} onClick={() => adj('current', -adjustValue)}>-</Btn>
           </ButtonGroup>
         </AdjustColumn>
-        
-        <ConditionsColumn theme={theme}>
-          <ConditionLabel>Conditions:</ConditionLabel>
-          {Object.entries(conditions).map(([key, value]) => (
-            <ConditionRow key={key}>
-              <ConditionToggle
-                theme={theme}
-                $active={value}
-                onClick={() => toggleCondition(key)}
-              >
-                {value ? 'Yes' : 'No'}
-              </ConditionToggle>
-              <ConditionName>{key.charAt(0).toUpperCase() + key.slice(1)}</ConditionName>
-            </ConditionRow>
-          ))}
-        </ConditionsColumn>
       </HealthLayout>
     </Section>
   );
@@ -161,50 +134,4 @@ const AdjustInput = styled.input`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 3px;
-`;
-
-const ConditionsColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 110px;
-  padding: 8px;
-  background: ${props => props.theme.inputBg};
-  border-radius: 4px;
-  border: 1px solid ${props => props.theme.border};
-`;
-
-const ConditionLabel = styled.div`
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 6px;
-  text-align: center;
-`;
-
-const ConditionRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const ConditionToggle = styled.button`
-  background: ${props => props.$active ? props.theme.borderAccent : props.theme.sectionBg};
-  color: ${props => props.$active ? '#000' : props.theme.text};
-  border: 1px solid ${props => props.theme.border};
-  padding: 3px 8px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: bold;
-  min-width: 35px;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const ConditionName = styled.span`
-  font-size: 12px;
-  font-weight: 500;
 `;
