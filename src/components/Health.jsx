@@ -51,65 +51,39 @@ export default function Health({ state, updateState }) {
       </MaxHealthDisplay>
 
       <HealthLayout>
-        <MainColumn>
-          <CurrentHealthSection theme={theme}>
-            <CurrentHealthLabel>Current Health</CurrentHealthLabel>
-            <CurrentHealthValue theme={theme}>{h.current}</CurrentHealthValue>
-            
-            <AdjustmentRow>
-              <AdjustLabel>Adjust by:</AdjustLabel>
-              <AdjustInput 
-                theme={theme}
-                type="number" 
-                value={adjustValue} 
-                onChange={handleAdjustValueChange}
-                min="0"
-              />
-              <ButtonGroup>
-                <Btn theme={theme} onClick={() => adj('current', adjustValue)}>+</Btn>
-                <Btn theme={theme} onClick={() => adj('current', -adjustValue)}>-</Btn>
-              </ButtonGroup>
-            </AdjustmentRow>
-          </CurrentHealthSection>
+        <StatsColumn>
+          <div style={{ fontSize: '15px', marginBottom: '6px' }}>
+            Temp: {h.temp} <Btn theme={theme} onClick={() => adj('temp', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('temp', -1)}>-</Btn>
+          </div>
 
-          <Divider theme={theme} />
+          <div style={{ fontSize: '15px', marginBottom: '6px' }}>
+            Base: {h.base} <Btn theme={theme} onClick={() => adj('base', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('base', -1)}>-</Btn>
+          </div>
 
-          <SmallStatRow theme={theme}>
-            <label>Temp:</label>
-            <span>{h.temp}</span>
-            <ButtonGroup>
-              <Btn theme={theme} onClick={() => adj('temp', 1)}>+</Btn>
-              <Btn theme={theme} onClick={() => adj('temp', -1)}>-</Btn>
-            </ButtonGroup>
-          </SmallStatRow>
+          <div style={{ fontSize: '15px', marginBottom: '6px' }}>
+            Equip: {h.equip} <Btn theme={theme} onClick={() => adj('equip', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('equip', -1)}>-</Btn>
+          </div>
 
-          <SmallStatRow theme={theme}>
-            <label>Base:</label>
-            <span>{h.base}</span>
-            <ButtonGroup>
-              <Btn theme={theme} onClick={() => adj('base', 1)}>+</Btn>
-              <Btn theme={theme} onClick={() => adj('base', -1)}>-</Btn>
-            </ButtonGroup>
-          </SmallStatRow>
-
-          <SmallStatRow theme={theme}>
-            <label>Equip:</label>
-            <span>{h.equip}</span>
-            <ButtonGroup>
-              <Btn theme={theme} onClick={() => adj('equip', 1)}>+</Btn>
-              <Btn theme={theme} onClick={() => adj('equip', -1)}>-</Btn>
-            </ButtonGroup>
-          </SmallStatRow>
-
-          <SmallStatRow theme={theme}>
-            <label>Mods:</label>
-            <span>{h.mods}</span>
-            <ButtonGroup>
-              <Btn theme={theme} onClick={() => adj('mods', 1)}>+</Btn>
-              <Btn theme={theme} onClick={() => adj('mods', -1)}>-</Btn>
-            </ButtonGroup>
-          </SmallStatRow>
-        </MainColumn>
+          <div style={{ fontSize: '15px', marginBottom: '6px' }}>
+            Mods: {h.mods} <Btn theme={theme} onClick={() => adj('mods', 1)}>+</Btn><Btn theme={theme} onClick={() => adj('mods', -1)}>-</Btn>
+          </div>
+        </StatsColumn>
+        
+        <AdjustColumn theme={theme}>
+          <CurrentHealthLabel>Current: {h.current}</CurrentHealthLabel>
+          <AdjustLabel>Adjust by:</AdjustLabel>
+          <AdjustInput 
+            theme={theme}
+            type="number" 
+            value={adjustValue} 
+            onChange={handleAdjustValueChange}
+            min="0"
+          />
+          <ButtonGroup>
+            <Btn theme={theme} onClick={() => adj('current', adjustValue)}>+</Btn>
+            <Btn theme={theme} onClick={() => adj('current', -adjustValue)}>-</Btn>
+          </ButtonGroup>
+        </AdjustColumn>
         
         <ConditionsColumn theme={theme}>
           <ConditionLabel>Conditions:</ConditionLabel>
@@ -139,39 +113,36 @@ const MaxHealthDisplay = styled.div`
   font-weight: bold;
 `;
 
-const CurrentHealthSection = styled.div`
+const HealthLayout = styled.div`
+  display: flex;
+  gap: 16px;
+`;
+
+const StatsColumn = styled.div`
+  flex: 1;
+`;
+
+const AdjustColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
   background: ${props => props.theme.inputBg};
-  padding: 20px;
-  border-radius: 8px;
+  border-radius: 4px;
   border: 2px solid ${props => props.theme.borderAccent};
-  margin-bottom: 16px;
+  min-width: 130px;
 `;
 
 const CurrentHealthLabel = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  text-align: center;
-`;
-
-const CurrentHealthValue = styled.div`
-  font-size: 52px;
+  font-size: 15px;
   font-weight: bold;
+  margin-bottom: 4px;
   text-align: center;
-  color: ${props => props.theme.borderAccent};
-  margin-bottom: 14px;
-  line-height: 1;
-`;
-
-const AdjustmentRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
 `;
 
 const AdjustLabel = styled.span`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 `;
 
@@ -187,47 +158,9 @@ const AdjustInput = styled.input`
   font-weight: bold;
 `;
 
-const Divider = styled.div`
-  height: 1px;
-  background: ${props => props.theme.border};
-  margin: 18px 0;
-`;
-
-const SmallStatRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 8px 0;
-  padding: 3px 0;
-  
-  label {
-    color: ${props => props.theme.text};
-    font-weight: 500;
-    min-width: 70px;
-    font-size: 15px;
-  }
-  
-  span {
-    color: ${props => props.theme.textSecondary};
-    font-weight: bold;
-    min-width: 35px;
-    text-align: center;
-    font-size: 15px;
-  }
-`;
-
 const ButtonGroup = styled.div`
   display: flex;
   gap: 3px;
-`;
-
-const HealthLayout = styled.div`
-  display: flex;
-  gap: 16px;
-`;
-
-const MainColumn = styled.div`
-  flex: 1;
 `;
 
 const ConditionsColumn = styled.div`
